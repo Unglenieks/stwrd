@@ -12,5 +12,5 @@
     "types": ["node"]
   },
   "include": ["./**/*.ts"],
-  "exclude": ["./_generated"]
+  "exclude": ["./_generated", "./**/*.test.ts"]
 }

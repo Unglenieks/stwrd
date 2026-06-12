@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as authInternal from "../authInternal.js";
+import type * as categories from "../categories.js";
 import type * as crons from "../crons.js";
 import type * as email from "../email.js";
 import type * as http from "../http.js";
@@ -22,6 +23,7 @@ import type * as lib_totp from "../lib/totp.js";
 import type * as roles from "../roles.js";
 import type * as settings from "../settings.js";
 import type * as setup from "../setup.js";
+import type * as tags from "../tags.js";
 import type * as twofactor from "../twofactor.js";
 import type * as twofactorInternal from "../twofactorInternal.js";
 import type * as users from "../users.js";
@@ -35,6 +37,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authInternal: typeof authInternal;
+  categories: typeof categories;
   crons: typeof crons;
   email: typeof email;
   http: typeof http;
@@ -47,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   roles: typeof roles;
   settings: typeof settings;
   setup: typeof setup;
+  tags: typeof tags;
   twofactor: typeof twofactor;
   twofactorInternal: typeof twofactorInternal;
   users: typeof users;

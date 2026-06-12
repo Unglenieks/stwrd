@@ -9,6 +9,7 @@ what was built, why, how it was verified, and any deviations from `spec.md`.
 | 0000 | [Project setup & environment](0000-project-setup.md) | — | ✅ Done |
 | 0001 | [Phase 1: Foundation (backend)](0001-phase1-foundation.md) | 1 | ✅ Done |
 | 0002 | [Phase 1: Frontend (auth surfaces)](0002-phase1-frontend.md) | 1 | ✅ Done |
+| 0003 | [Phase 2 · Step 1: Taxonomy (categories + tags)](0003-phase2-step1-taxonomy.md) | 2 | ✅ Done |
 
 ## Conventions
 

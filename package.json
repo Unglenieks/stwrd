@@ -10,7 +10,8 @@
   },
   "scripts": {
     "typecheck": "pnpm -r typecheck && tsc -p convex/tsconfig.json --noEmit",
-    "test": "pnpm -r test",
+    "test": "pnpm -r test && pnpm test:convex",
+    "test:convex": "vitest run --config vitest.convex.config.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "convex:dev": "convex dev",
@@ -27,10 +28,13 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "^4.0.0",
     "@types/node": "^22.9.0",
     "@types/nodemailer": "^6.4.16",
+    "convex-test": "^0.0.35",
     "eslint": "^9.14.0",
     "prettier": "^3.3.3",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
   }
 }

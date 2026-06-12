@@ -58,4 +58,6 @@ codes) — backend verified against a live Convex backend and the auth surfaces
 (`/setup`, `/login`, `/invite/:token`) verified end-to-end in a browser
 (Playwright). See [`docs/devlog`](./docs/devlog/) for the implementation record.
 
-🚧 Next: Phase 2 — Circulation core (contribution, catalog, claim/handoff).
+🚧 **Phase 2 — Circulation core** in progress (5 steps): ✅ 1. Taxonomy ·
+2. Media + contribution · 3. Catalog & item page · 4. Claim & handoff ·
+5. Expiry cron & polish. End of phase 2 = a usable library.
