@@ -9,7 +9,11 @@ build/
 .vinxi/
 .tanstack/
 .nitro/
-convex/_generated/
+.convex-tmp/
+backups/
+
+# Convex codegen IS committed (Convex-recommended; needed for CI typecheck
+# without a live backend) — do not ignore convex/_generated/.
 
 # Env & secrets
 .env

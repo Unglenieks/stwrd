@@ -1,0 +1,78 @@
+# Distributed Library of Things — reference deployment (spec §19.1).
+#
+# Three services + reverse proxy, one stack. Image tags are pinned (never
+# `latest`, per §4). Bring up: `cp .env.example .env`, fill it, `docker compose up -d`.
+# See ../docs/ops-README.md for the full first-run procedure (§19.2).
+
+services:
+  backend:
+    image: ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    environment:
+      - INSTANCE_NAME=${INSTANCE_NAME}
+      - INSTANCE_SECRET=${INSTANCE_SECRET}
+      - CONVEX_CLOUD_ORIGIN=${PUBLIC_API_ORIGIN} # e.g. https://library.example.org/api
+      - CONVEX_SITE_ORIGIN=${PUBLIC_SITE_ORIGIN} # http actions origin
+      - POSTGRES_URL=${POSTGRES_URL:-} # empty ⇒ SQLite
+      - DISABLE_BEACON=true
+      - REDACT_LOGS_TO_CLIENT=${REDACT_LOGS_TO_CLIENT:-true}
+    volumes:
+      - data:/convex/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3210/version"]
+      interval: 10s
+      start_period: 20s
+      timeout: 5s
+      retries: 5
+    ports:
+      # API (WebSocket/client) and HTTP actions. Exposed to the proxy only;
+      # in production the proxy fronts these — bind to localhost if not proxying.
+      - "127.0.0.1:3210:3210"
+      - "127.0.0.1:3211:3211"
+
+  dashboard:
+    image: ghcr.io/get-convex/convex-dashboard@sha256:bbc4d2c43d19fd6f2791dd6c5153a76e127f3eea489c1639e5acf66999c216bf
+    ports:
+      - "127.0.0.1:6791:6791" # localhost-only by default — never expose publicly (§3.1)
+    environment:
+      - NEXT_PUBLIC_DEPLOYMENT_URL=${PUBLIC_API_ORIGIN}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    environment:
+      # Written to /runtime-config.json at container start (§19.5). No secrets here.
+      - PUBLIC_API_ORIGIN=${PUBLIC_API_ORIGIN}
+      - PUBLIC_SITE_ORIGIN=${PUBLIC_SITE_ORIGIN}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
+      interval: 10s
+      start_period: 15s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  proxy:
+    image: caddy:2.8
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
+volumes:
+  data: {}
+  caddy_data: {}
+  caddy_config: {}

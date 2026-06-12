@@ -1,0 +1,28 @@
+# Caddy reverse proxy (spec §3.1, §19.5).
+#
+# Terminates TLS for a single public hostname and routes:
+#   /api/*  → Convex backend client API (WebSocket) on :3210
+#   /*      → TanStack Start frontend on :3000
+#
+# TLS is automatic via ACME HTTP-01 (ports 80/443 reachable). For CGNAT / DDNS,
+# swap in the DNS-01 challenge with a Caddy DNS-provider plugin — see
+# ../docs/ops-README.md (§19.5). The Convex dashboard (:6791) is intentionally
+# NOT routed here; it stays bound to localhost (§3.1).
+
+{$PROXY_HOSTNAME} {
+	encode zstd gzip
+
+	# Convex client API + HTTP actions (auth endpoints see X-Forwarded-For, §6.2).
+	handle_path /api/* {
+		reverse_proxy backend:3210 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	# Everything else → the web frontend.
+	handle {
+		reverse_proxy frontend:3000
+	}
+
+	tls {$ACME_EMAIL}
+}

@@ -9,13 +9,26 @@
     "node": ">=22"
   },
   "scripts": {
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm -r typecheck && tsc -p convex/tsconfig.json --noEmit",
     "test": "pnpm -r test",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy"
+  },
+  "dependencies": {
+    "@convex-dev/auth": "^0.0.80",
+    "@lot/shared": "workspace:*",
+    "@node-rs/argon2": "^2.0.2",
+    "convex": "^1.17.0",
+    "imapflow": "^1.0.171",
+    "nodemailer": "^6.9.16",
+    "otpauth": "^9.3.4",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
+    "@types/nodemailer": "^6.4.16",
     "eslint": "^9.14.0",
     "prettier": "^3.3.3",
     "typescript": "^5.6.3"
