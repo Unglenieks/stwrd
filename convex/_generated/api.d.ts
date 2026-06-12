@@ -21,6 +21,7 @@ import type * as lib_instance from "../lib/instance.js";
 import type * as lib_ledger from "../lib/ledger.js";
 import type * as lib_passwordCrypto from "../lib/passwordCrypto.js";
 import type * as lib_permissions from "../lib/permissions.js";
+import type * as lib_search from "../lib/search.js";
 import type * as lib_tokens from "../lib/tokens.js";
 import type * as lib_totp from "../lib/totp.js";
 import type * as roles from "../roles.js";
@@ -52,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   "lib/ledger": typeof lib_ledger;
   "lib/passwordCrypto": typeof lib_passwordCrypto;
   "lib/permissions": typeof lib_permissions;
+  "lib/search": typeof lib_search;
   "lib/tokens": typeof lib_tokens;
   "lib/totp": typeof lib_totp;
   roles: typeof roles;

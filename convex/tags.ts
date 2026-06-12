@@ -14,6 +14,7 @@ import type { MutationCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { recordAudit } from "./lib/instance";
 import { requirePermission } from "./lib/permissions";
+import { buildSearchText } from "./lib/search";
 
 function normalizeTag(raw: string): string {
   const parsed = zTag.safeParse(raw);
@@ -54,7 +55,11 @@ async function rewriteTag(ctx: MutationCtx, from: string, to: string): Promise<n
       const mapped = tag === from ? to : tag;
       if (!next.includes(mapped)) next.push(mapped);
     }
-    await ctx.db.patch(item._id, { tags: next.slice(0, TAGS_MAX_PER_ITEM) });
+    const tags = next.slice(0, TAGS_MAX_PER_ITEM);
+    await ctx.db.patch(item._id, {
+      tags,
+      searchText: buildSearchText({ title: item.title, description: item.description, tags }),
+    });
     touched += 1;
   }
   return touched;

@@ -13,6 +13,8 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContributeRouteImport } from './routes/contribute'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ItemsIndexRouteImport } from './routes/items.index'
+import { Route as ItemsIdRouteImport } from './routes/items.$id'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 
 const SetupRoute = SetupRouteImport.update({
@@ -35,6 +37,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ItemsIndexRoute = ItemsIndexRouteImport.update({
+  id: '/items/',
+  path: '/items/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItemsIdRoute = ItemsIdRouteImport.update({
+  id: '/items/$id',
+  path: '/items/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: '/invite/$token',
   path: '/invite/$token',
@@ -47,6 +59,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/items/$id': typeof ItemsIdRoute
+  '/items/': typeof ItemsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +68,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/items/$id': typeof ItemsIdRoute
+  '/items': typeof ItemsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +78,37 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/items/$id': typeof ItemsIdRoute
+  '/items/': typeof ItemsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contribute' | '/login' | '/setup' | '/invite/$token'
+  fullPaths:
+    | '/'
+    | '/contribute'
+    | '/login'
+    | '/setup'
+    | '/invite/$token'
+    | '/items/$id'
+    | '/items/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contribute' | '/login' | '/setup' | '/invite/$token'
-  id: '__root__' | '/' | '/contribute' | '/login' | '/setup' | '/invite/$token'
+  to:
+    | '/'
+    | '/contribute'
+    | '/login'
+    | '/setup'
+    | '/invite/$token'
+    | '/items/$id'
+    | '/items'
+  id:
+    | '__root__'
+    | '/'
+    | '/contribute'
+    | '/login'
+    | '/setup'
+    | '/invite/$token'
+    | '/items/$id'
+    | '/items/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +117,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SetupRoute: typeof SetupRoute
   InviteTokenRoute: typeof InviteTokenRoute
+  ItemsIdRoute: typeof ItemsIdRoute
+  ItemsIndexRoute: typeof ItemsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -109,6 +151,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/items/': {
+      id: '/items/'
+      path: '/items'
+      fullPath: '/items/'
+      preLoaderRoute: typeof ItemsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/items/$id': {
+      id: '/items/$id'
+      path: '/items/$id'
+      fullPath: '/items/$id'
+      preLoaderRoute: typeof ItemsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invite/$token': {
       id: '/invite/$token'
       path: '/invite/$token'
@@ -125,6 +181,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SetupRoute: SetupRoute,
   InviteTokenRoute: InviteTokenRoute,
+  ItemsIdRoute: ItemsIdRoute,
+  ItemsIndexRoute: ItemsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -130,6 +130,10 @@ export default defineSchema({
     contributedAt: v.number(),
     // Denormalized for default catalog sort (most recently AVAILABLE first, §17).
     lastAvailableAt: v.number(),
+    // Denormalized title + description + tags for full-text catalog search (§17).
+    // A Convex search index covers a single field; this is maintained on every
+    // write that touches title/description/tags. Optional for schema evolution.
+    searchText: v.optional(v.string()),
     retiredAt: v.optional(v.number()),
   })
     .index("by_state", ["state"])
@@ -138,8 +142,9 @@ export default defineSchema({
     .index("by_branch", ["atBranchId"])
     .index("by_contributor", ["contributedBy"])
     .index("by_state_lastAvailable", ["state", "lastAvailableAt"])
+    .index("by_lastAvailableAt", ["lastAvailableAt"])
     .searchIndex("search_catalog", {
-      searchField: "title",
+      searchField: "searchText",
       filterFields: ["state", "categoryId", "conditionRating", "atBranchId"],
     }),
 

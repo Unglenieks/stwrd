@@ -15,15 +15,26 @@ import {
   PERMISSIONS,
 } from "@lot/shared";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { paginationOptsValidator } from "convex/server";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
-import { action, internalMutation, mutation } from "./_generated/server";
+import { action, internalMutation, mutation, query } from "./_generated/server";
 import { appendLedger, getItemOrThrow } from "./lib/ledger";
 import { getEffectivePermissions, requirePermission, requireUser } from "./lib/permissions";
+import { buildSearchText } from "./lib/search";
 import { verifyPhotos } from "./storage";
 
 const exchangeMode = v.union(v.literal("reveal_contact"), v.literal("branch"));
 const attributesV = v.array(v.object({ key: v.string(), value: v.string() }));
+const itemStateV = v.union(
+  v.literal("available"),
+  v.literal("claimed"),
+  v.literal("in_custody"),
+  v.literal("under_repair"),
+  v.literal("retired"),
+);
+
+const LIVE_CLAIM_STATES = ["pending", "giver_confirmed", "receiver_confirmed"];
 
 // ── Contribution (§8.2) ──────────────────────────────────────────────────────
 
@@ -91,6 +102,11 @@ export const createContributed = internalMutation({
       contributedBy: actor._id,
       contributedAt: now,
       lastAvailableAt: now,
+      searchText: buildSearchText({
+        title: args.title,
+        description: args.description,
+        tags: args.tags,
+      }),
     });
 
     const item = await getItemOrThrow(ctx, itemId);
@@ -178,6 +194,18 @@ export const update = mutation({
     if (args.patch.categoryId !== undefined) patch.categoryId = args.patch.categoryId;
     if (args.patch.tags !== undefined) patch.tags = parsed.data.patch.tags;
     if (args.patch.attributes !== undefined) patch.attributes = args.patch.attributes;
+    // Keep the denormalized search text in sync when its inputs change (§17).
+    if (
+      patch.title !== undefined ||
+      patch.description !== undefined ||
+      patch.tags !== undefined
+    ) {
+      patch.searchText = buildSearchText({
+        title: patch.title ?? item.title,
+        description: patch.description ?? item.description,
+        tags: patch.tags ?? item.tags,
+      });
+    }
     await ctx.db.patch(item._id, patch);
   },
 });
@@ -229,5 +257,172 @@ export const withdrawListing = mutation({
       actorId: user._id,
       note: "listing withdrawn",
     });
+  },
+});
+
+// ── Catalog & item reads (§17, §22.2) ────────────────────────────────────────
+
+/**
+ * Paginated catalog (§17). With a search term, uses the full-text index over
+ * title+description+tags (with index-supported eq filters); otherwise browses by
+ * most-recently-available first. Filters the search index can't express
+ * (condition range, tag-contains, RETIRED exclusion) are applied to each page —
+ * pages may therefore be slightly shorter than the requested size.
+ */
+export const list = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    search: v.optional(v.string()),
+    categoryId: v.optional(v.id("categories")),
+    tags: v.optional(v.array(v.string())),
+    state: v.optional(itemStateV),
+    conditionMin: v.optional(v.number()),
+    conditionMax: v.optional(v.number()),
+    atBranchId: v.optional(v.id("branches")),
+    includeRetired: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    await requireUser(ctx);
+    const includeRetired = args.includeRetired ?? false;
+    const wantTags = (args.tags ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean);
+    const term = args.search?.trim();
+
+    const result = term
+      ? await ctx.db
+          .query("items")
+          .withSearchIndex("search_catalog", (s) => {
+            let sq = s.search("searchText", term);
+            if (args.state) sq = sq.eq("state", args.state);
+            if (args.categoryId) sq = sq.eq("categoryId", args.categoryId);
+            if (args.atBranchId) sq = sq.eq("atBranchId", args.atBranchId);
+            return sq;
+          })
+          .paginate(args.paginationOpts)
+      : await ctx.db
+          .query("items")
+          .withIndex("by_lastAvailableAt")
+          .order("desc")
+          .filter((f) => {
+            const conds = [];
+            if (args.state) conds.push(f.eq(f.field("state"), args.state));
+            else if (!includeRetired) conds.push(f.neq(f.field("state"), "retired"));
+            if (args.categoryId) conds.push(f.eq(f.field("categoryId"), args.categoryId));
+            if (args.atBranchId) conds.push(f.eq(f.field("atBranchId"), args.atBranchId));
+            if (args.conditionMin !== undefined)
+              conds.push(f.gte(f.field("conditionRating"), args.conditionMin));
+            if (args.conditionMax !== undefined)
+              conds.push(f.lte(f.field("conditionRating"), args.conditionMax));
+            return conds.length ? conds.reduce((a, b) => f.and(a, b)) : f.eq(f.field("_id"), f.field("_id"));
+          })
+          .paginate(args.paginationOpts);
+
+    let items = result.page;
+    if (term) {
+      items = items.filter((it) => {
+        if (!includeRetired && !args.state && it.state === "retired") return false;
+        if (args.conditionMin !== undefined && it.conditionRating < args.conditionMin) return false;
+        if (args.conditionMax !== undefined && it.conditionRating > args.conditionMax) return false;
+        return true;
+      });
+    }
+    if (wantTags.length) {
+      items = items.filter((it) => wantTags.every((t) => it.tags.includes(t)));
+    }
+
+    const page = await Promise.all(
+      items.map(async (it) => ({
+        _id: it._id,
+        title: it.title,
+        state: it.state,
+        conditionRating: it.conditionRating,
+        tags: it.tags,
+        atBranchId: it.atBranchId ?? null,
+        lastAvailableAt: it.lastAvailableAt,
+        primaryPhotoUrl: await ctx.storage.getUrl(it.primaryPhotoId),
+      })),
+    );
+
+    return { page, isDone: result.isDone, continueCursor: result.continueCursor };
+  },
+});
+
+/** Full item detail for the item page (§16). */
+export const get = query({
+  args: { itemId: v.id("items") },
+  handler: async (ctx, { itemId }) => {
+    const me = await requireUser(ctx);
+    const item = await ctx.db.get(itemId);
+    if (!item) throw new AppError("not_found");
+    const custodian = await ctx.db.get(item.custodianId);
+    const category = await ctx.db.get(item.categoryId);
+    const branch = item.atBranchId ? await ctx.db.get(item.atBranchId) : null;
+    const watching = await ctx.db
+      .query("watches")
+      .withIndex("by_user_item", (q) => q.eq("userId", me._id).eq("itemId", itemId))
+      .first();
+    const claims = await ctx.db
+      .query("claims")
+      .withIndex("by_item", (q) => q.eq("itemId", itemId))
+      .collect();
+    const liveClaim = claims.find((c) => LIVE_CLAIM_STATES.includes(c.state)) ?? null;
+
+    return {
+      _id: item._id,
+      title: item.title,
+      description: item.description,
+      tags: item.tags,
+      attributes: item.attributes,
+      state: item.state,
+      conditionRating: item.conditionRating,
+      categoryId: item.categoryId,
+      categoryName: category?.name ?? null,
+      categoryArchived: category?.archived ?? false,
+      custodianId: item.custodianId,
+      custodianName: custodian?.name ?? "Unknown",
+      atBranchId: item.atBranchId ?? null,
+      branchName: branch?.name ?? null,
+      exchangePref: item.exchangePref,
+      contributedAt: item.contributedAt,
+      lastAvailableAt: item.lastAvailableAt,
+      primaryPhotoUrl: await ctx.storage.getUrl(item.primaryPhotoId),
+      isWatching: watching !== null,
+      hasLiveClaim: liveClaim !== null,
+      liveClaimId: liveClaim?._id ?? null,
+      isMine: item.custodianId === me._id,
+    };
+  },
+});
+
+/** Paginated ledger timeline, newest first (§16 centerpiece; 50/page §23.1). */
+export const ledger = query({
+  args: { itemId: v.id("items"), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    await requireUser(ctx);
+    const result = await ctx.db
+      .query("ledgerEntries")
+      .withIndex("by_item_seq", (q) => q.eq("itemId", args.itemId))
+      .order("desc")
+      .paginate(args.paginationOpts);
+
+    const page = await Promise.all(
+      result.page.map(async (e) => ({
+        _id: e._id,
+        seq: e.seq,
+        type: e.type,
+        note: e.note ?? null,
+        reason: e.reason ?? null,
+        conditionRating: e.conditionRating ?? null,
+        createdAt: e.createdAt,
+        actorName: (await ctx.db.get(e.actorId))?.name ?? "Unknown",
+        counterpartyName: e.counterpartyId
+          ? ((await ctx.db.get(e.counterpartyId))?.name ?? null)
+          : null,
+        photoUrls: (
+          await Promise.all(e.photoFileIds.map((id) => ctx.storage.getUrl(id)))
+        ).filter((u): u is string => u !== null),
+      })),
+    );
+
+    return { page, isDone: result.isDone, continueCursor: result.continueCursor };
   },
 });

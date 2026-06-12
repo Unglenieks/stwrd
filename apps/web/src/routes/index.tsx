@@ -41,16 +41,22 @@ function SignedInHome() {
         <p className="text-slate-700">
           Signed in as <span className="font-medium">{me?.name ?? me?.email}</span>.
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex gap-3">
+          <Link
+            to="/items"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+          >
+            Browse catalog
+          </Link>
           <Link
             to="/contribute"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 hover:bg-slate-50"
           >
             Contribute an item
           </Link>
         </div>
         <p className="mt-4 text-sm text-slate-500">
-          The catalog and claim/handoff flow arrive in the next Phase 2 steps.
+          The claim &amp; handoff flow arrives in the next Phase 2 step.
         </p>
       </Card>
     </main>
