@@ -1,7 +1,7 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { useEffect } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
 import { Button, Card } from "~/components/ui";
 
@@ -41,8 +41,16 @@ function SignedInHome() {
         <p className="text-slate-700">
           Signed in as <span className="font-medium">{me?.name ?? me?.email}</span>.
         </p>
-        <p className="mt-2 text-sm text-slate-500">
-          The catalog and circulation features arrive in Phase 2.
+        <div className="mt-4">
+          <Link
+            to="/contribute"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+          >
+            Contribute an item
+          </Link>
+        </div>
+        <p className="mt-4 text-sm text-slate-500">
+          The catalog and claim/handoff flow arrive in the next Phase 2 steps.
         </p>
       </Card>
     </main>
