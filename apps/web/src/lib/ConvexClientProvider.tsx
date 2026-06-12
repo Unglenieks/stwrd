@@ -19,18 +19,32 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<
     { client: ConvexReactClient; config: RuntimeConfig } | null
   >(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    loadRuntimeConfig().then((config) => {
-      if (cancelled) return;
-      const client = new ConvexReactClient(config.apiUrl);
-      setState({ client, config });
-    });
+    let created: ConvexReactClient | null = null;
+    loadRuntimeConfig()
+      .then((config) => {
+        if (cancelled) return;
+        created = new ConvexReactClient(config.apiUrl);
+        setState({ client: created, config });
+      })
+      .catch(() => {
+        if (!cancelled) setError("Couldn't load app configuration. Please retry.");
+      });
     return () => {
       cancelled = true;
+      // Tear down the WebSocket on unmount so we don't leak connections.
+      void created?.close();
     };
   }, []);
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-600">{error}</div>
+    );
+  }
 
   if (!state) {
     return (

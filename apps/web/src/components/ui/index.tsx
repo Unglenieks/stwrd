@@ -5,9 +5,12 @@ import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type R
 import { cn } from "~/lib/utils";
 
 export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, type, ...props }, ref) => (
     <button
       ref={ref}
+      // Default to "button" so buttons outside an explicit submit role never
+      // accidentally submit a surrounding form; forms pass type="submit".
+      type={type ?? "button"}
       className={cn(
         "inline-flex h-10 w-full items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:pointer-events-none disabled:opacity-50",
         className,

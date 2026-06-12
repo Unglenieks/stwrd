@@ -4,20 +4,33 @@
 // writes /runtime-config.json from PUBLIC_API_ORIGIN / PUBLIC_SITE_ORIGIN at
 // startup; the client fetches it before opening the Convex connection. A
 // hostname change therefore needs only a restart — no image rebuild.
+import { z } from "zod";
 
-export interface RuntimeConfig {
+const runtimeConfigSchema = z.object({
   /** Convex client API origin (WebSocket/HTTP), e.g. https://lib.example.org/api */
-  apiUrl: string;
+  apiUrl: z.string().url(),
   /** Convex HTTP-actions (site) origin, where /auth/* lives. */
-  siteUrl: string;
-}
+  siteUrl: z.string().url(),
+});
 
-let cached: RuntimeConfig | null = null;
+export type RuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
-export async function loadRuntimeConfig(): Promise<RuntimeConfig> {
-  if (cached) return cached;
-  const res = await fetch("/runtime-config.json", { cache: "no-store" });
-  if (!res.ok) throw new Error(`failed to load runtime-config.json: ${res.status}`);
-  cached = (await res.json()) as RuntimeConfig;
+// Cache the in-flight promise (not just the result) so concurrent callers during
+// startup share a single fetch rather than racing separate requests.
+let cached: Promise<RuntimeConfig> | null = null;
+
+export function loadRuntimeConfig(): Promise<RuntimeConfig> {
+  if (!cached) {
+    cached = (async () => {
+      const res = await fetch("/runtime-config.json", { cache: "no-store" });
+      if (!res.ok) throw new Error(`failed to load runtime-config.json: ${res.status}`);
+      // Validate at runtime — a malformed config should fail loudly here, not
+      // surface as a confusing connection error later.
+      return runtimeConfigSchema.parse(await res.json());
+    })().catch((err) => {
+      cached = null; // allow a retry on transient failure
+      throw err;
+    });
+  }
   return cached;
 }
