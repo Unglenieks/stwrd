@@ -1,31 +1,40 @@
 // Convex Auth wiring (self-hosted, manual setup — the CLI does not scaffold
 // self-hosted). Spec §4, §6.
 //
-// We use the Password provider for the PASSWORD PHASE only (§6.2 step 1). The
-// second-factor elevation (TOTP / email OTP / recovery codes) is OURS, layered
-// on top via HTTP actions (see convex/http.ts), because Convex Auth has no
-// built-in mid-flow 2FA.
-//
-// NOTE (hashing): the spec specifies Argon2id. Convex Auth's Password provider
-// hashes inside the V8 isolate, where native modules (@node-rs/argon2) cannot
-// load; the provider default is Scrypt (oslo, pure-JS). Honoring Argon2id
-// requires a WASM argon2 build wired as a custom `crypto` provider — tracked as
-// a Phase 1 follow-up. The elevation state machine is unaffected by this choice.
-import { Password } from "@convex-dev/auth/providers/Password";
+// Design: a single ConvexCredentials provider whose `authorize` only ever
+// consumes a VERIFIED single-use completion token (our `mfaPending` row, marked
+// ready once every required factor has passed) and returns the userId — Convex
+// Auth then mints the session. Password verification and the second-factor
+// elevation state machine (§6.2) live in the /auth/* HTTP actions
+// (convex/http.ts), which is also where per-IP rate limiting sees
+// X-Forwarded-For (§18.1). Account secrets are hashed with our isolate-safe
+// PBKDF2 (see lib/passwordCrypto.ts — DEVIATION from Argon2id, documented there).
+import { ConvexCredentials } from "@convex-dev/auth/providers/ConvexCredentials";
 import { convexAuth } from "@convex-dev/auth/server";
-import { DataModel } from "./_generated/dataModel";
+import { AppError } from "@lot/shared";
+import { internal } from "./_generated/api";
+import type { DataModel, Id } from "./_generated/dataModel";
+import { hashSecret, verifySecret } from "./lib/passwordCrypto";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
-    Password<DataModel>({
-      // New accounts are provisioned by invite (§6.1); self-registration is
-      // disabled. The invite-accept HTTP action calls signIn with a verified
-      // email; the profile row is created/linked there.
-      profile(params) {
-        return {
-          email: params.email as string,
-          name: (params.name as string) ?? "",
-        };
+    ConvexCredentials<DataModel>({
+      id: "credentials",
+      // Hashing for createAccount/retrieveAccount secret storage (§6.2).
+      crypto: { hashSecret, verifySecret },
+      // Mints a session only when handed a completion token our elevation flow
+      // has already marked verified (password + any required second factor).
+      authorize: async (credentials, ctx) => {
+        const completionToken = credentials.completionToken;
+        if (typeof completionToken !== "string" || completionToken.length === 0) {
+          throw new AppError("unauthenticated");
+        }
+        const userId: Id<"users"> | null = await ctx.runMutation(
+          internal.authInternal.consumeCompletionToken,
+          { rawToken: completionToken },
+        );
+        if (!userId) throw new AppError("unauthenticated");
+        return { userId };
       },
     }),
   ],

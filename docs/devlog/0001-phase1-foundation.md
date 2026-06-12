@@ -84,24 +84,69 @@ restore), `.env.example` (the §19.3 environment contract).
 `convex run settings:setupStatus` → `{hasUsers:false, setupComplete:false}`;
 `convex run roles:catalog` correctly throws (unauthenticated).
 
+### Auth flow — setup, invites, second-factor elevation (§6, §22.1)
+
+The full authentication state machine, built on Convex Auth via a single
+`ConvexCredentials` provider whose `authorize` only ever consumes a verified,
+single-use completion token (`mfaPending`) and returns the userId for Convex
+Auth to mint the session.
+
+- `lib/passwordCrypto.ts`: PBKDF2-HMAC-SHA-256 hashing (isolate-safe), self-
+  describing format for future upgrade.
+- `lib/tokens.ts`: opaque token gen + SHA-256 hashing, uniform numeric OTP,
+  recovery-code generation (unambiguous alphabet).
+- `lib/totp.ts`: RFC 6238 TOTP via Web Crypto HMAC-SHA-1, ±1 step tolerance,
+  base32, otpauth URI builder — no native dependency.
+- `authInternal.ts`: pending/completion tokens, email-OTP issue/consume
+  (5-attempt → 15-min lockout), TOTP secret staging, recovery-code consume,
+  invite lookup/accept, and per-IP/per-account rate-limit counters.
+- `setup.ts`: the §6.3 bootstrap wizard (`wizard` action + `assertFresh`/`finish`
+  internal mutations) — creates the server manager, seeds roles, assigns Server
+  Manager, writes `instanceSettings`. Refuses re-run.
+- `users.ts`: `invite` (M+A), `createInvite`, `me`, `updateProfile`, `list`
+  (admin members), `deactivate`/`reactivate` (last-admin-guarded).
+- `twofactor.ts` + `twofactorInternal.ts`: TOTP enrollment (`startTotpEnrollment`
+  → staged secret + otpauth URI; `confirmTotpEnrollment` → verify, enable, emit
+  one-time recovery codes), `regenerateRecoveryCodes`, `status`.
+- `http.ts`: the five §22.1 HTTP actions — `/auth/login`, `/auth/mfa/send-otp`,
+  `/auth/mfa/verify`, `/auth/invite/accept`, `/auth/logout` — with
+  `X-Forwarded-For` rate limiting (§18.1), CORS, and AppError→HTTP-status mapping.
+- `email.ts`: outbox `enqueue` (drain action lands in Phase 3).
+
+**Policy engine (§6.2):** `required` → always second-factored; `off` →
+second factor only for voluntarily-enrolled members or full-permission accounts
+once a factor is available. Bootstrap escape honored (full-permission account
+with no SMTP and no TOTP logs in password-only).
+
+**Live-backend verification:**
+- `setup:wizard` → `{ok:true}`; second run → `state_conflict`; `setupStatus` →
+  `{hasUsers:true, setupComplete:true}` (C-01).
+- `POST /auth/login` correct password → `{status:"complete", completionToken}`;
+  wrong password → `401 unauthenticated`.
+- `POST /auth/mfa/verify` / `send-otp` bad token → `401`; `invite/accept` bad
+  token → `404 not_found`; CORS preflight returns the expected headers.
+
 ## Deviations
 
-- ⚠️ **Password hashing uses Scrypt, not Argon2id (§6.2).** Convex Auth hashes
-  inside the V8 isolate, where native `@node-rs/argon2` cannot load, so the
-  provider default (Scrypt via oslo) is in effect. Honoring Argon2id requires a
-  WASM argon2 build wired as a custom `crypto` provider on the Password provider.
-  Tracked as a Phase 1 follow-up; flagged in `convex/auth.ts`.
+- ⚠️ **Password hashing uses PBKDF2-HMAC-SHA-256, not Argon2id (§6.2).** Argon2
+  has no Web Crypto primitive and native/WASM builds don't load in the Convex V8
+  isolate where hashing runs. PBKDF2 (210k iterations, FIPS-grade) is the
+  isolate-safe substitute; the stored format is self-describing so a future WASM
+  Argon2id can re-hash transparently on next login. Documented in
+  `lib/passwordCrypto.ts`. (Supersedes the earlier "Scrypt default" note — we now
+  control hashing explicitly via the credentials provider's `crypto` option.)
+- ⚠️ **Session mint is a second client call (§22.1).** `/auth/login` returns a
+  `completionToken` rather than directly setting a session cookie; the frontend
+  exchanges it via Convex Auth's `signIn("credentials", {completionToken})` so
+  the React client manages tokens natively. The spec's intent — HTTP actions for
+  IP-aware rate limiting and a token (not a session) between factors — is
+  preserved.
 
 ## Remaining for Phase 1
 
-- [ ] Setup wizard (`/setup` bootstrap mutation/flow, §6.3): create server
-      manager, name org, choose 2FA policy, set claim expiry, seed roles, write
-      `instanceSettings`.
-- [ ] Invite issuance + accept, linked through Convex Auth (`users.invite`,
-      `/auth/invite/accept`, §6.1, §22.1).
-- [ ] Second-factor elevation HTTP actions (§6.2, §22.1): `/auth/login`,
-      `/auth/mfa/send-otp`, `/auth/mfa/verify`, `/auth/logout` — TOTP, email OTP,
-      recovery codes, per-IP + per-account rate limiting via `X-Forwarded-For`.
-- [ ] `users.deactivate` (§6.4) and the org 2FA policy enforcement (§6.2).
-- [ ] `apps/web` scaffold so the setup wizard and login are reachable end-to-end.
-- [ ] Argon2id follow-up (see Deviations).
+- [ ] `apps/web` scaffold so `/setup`, `/login`, and `/invite/:token` are
+      reachable end-to-end (runtime-config.json §19.5, Convex Auth provider).
+- [ ] Frontend full-flow verification of 2FA-required login + invite accept +
+      TOTP enrollment (the backend branches are in place and unit-exercised).
+- [ ] Argon2id WASM follow-up (see Deviations).
+- [ ] Claim-cancellation on deactivation wires in with the claims module (Phase 2).

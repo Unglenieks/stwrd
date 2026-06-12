@@ -279,11 +279,15 @@ export default defineSchema({
   // ── Auth/2FA support tables (our second-factor stack, §6.2) ────────────────
 
   // Short-lived single-use mfa_pending tokens issued after the password phase.
+  // `secondFactorSatisfied` flips true once the required factor passes (or
+  // immediately when no second factor is required); only then can the token be
+  // exchanged for a session via the credentials provider's authorize (§6.2).
   mfaPending: defineTable({
     userId: v.id("users"),
     tokenHash: v.string(),
     expiresAt: v.number(),
     consumed: v.boolean(),
+    secondFactorSatisfied: v.boolean(),
     createdAt: v.number(),
   })
     .index("by_tokenHash", ["tokenHash"])
