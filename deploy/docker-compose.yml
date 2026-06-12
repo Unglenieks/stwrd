@@ -12,8 +12,11 @@ services:
     environment:
       - INSTANCE_NAME=${INSTANCE_NAME}
       - INSTANCE_SECRET=${INSTANCE_SECRET}
-      - CONVEX_CLOUD_ORIGIN=${PUBLIC_API_ORIGIN} # e.g. https://library.example.org/api
-      - CONVEX_SITE_ORIGIN=${PUBLIC_SITE_ORIGIN} # http actions origin
+      - CONVEX_CLOUD_ORIGIN=${PUBLIC_API_ORIGIN} # client API origin, e.g. https://library.example.org/api
+      # Backend HTTP-actions origin: where /.well-known/jwks.json and the /auth/*
+      # endpoints are served. The backend resolves its OWN issuer/JWKS from this,
+      # and the frontend calls /auth/* here — it is NOT the public frontend URL.
+      - CONVEX_SITE_ORIGIN=${CONVEX_SITE_ORIGIN}
       - POSTGRES_URL=${POSTGRES_URL:-} # empty ⇒ SQLite
       - DISABLE_BEACON=true
       - REDACT_LOGS_TO_CLIENT=${REDACT_LOGS_TO_CLIENT:-true}
@@ -47,10 +50,12 @@ services:
       dockerfile: apps/web/Dockerfile
     environment:
       # Written to /runtime-config.json at container start (§19.5). No secrets here.
+      # siteUrl points at the browser-facing Convex HTTP-actions origin (/auth/*,
+      # well-known) — the public counterpart of CONVEX_SITE_ORIGIN.
       - PUBLIC_API_ORIGIN=${PUBLIC_API_ORIGIN}
-      - PUBLIC_SITE_ORIGIN=${PUBLIC_SITE_ORIGIN}
+      - PUBLIC_CONVEX_SITE_ORIGIN=${PUBLIC_CONVEX_SITE_ORIGIN}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 10s
       start_period: 15s
       timeout: 5s

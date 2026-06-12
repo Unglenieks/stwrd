@@ -51,4 +51,11 @@ A Caddy reverse proxy terminates TLS and routes a single public hostname.
 
 ## Status
 
-🚧 Phase 1 — Foundation (in progress).
+✅ **Phase 1 — Foundation complete.** Compose stack, Convex schema, roles/
+permissions engine, settings, and the full authentication flow (setup wizard,
+invites, password + second-factor elevation with TOTP / email OTP / recovery
+codes) — backend verified against a live Convex backend and the auth surfaces
+(`/setup`, `/login`, `/invite/:token`) verified end-to-end in a browser
+(Playwright). See [`docs/devlog`](./docs/devlog/) for the implementation record.
+
+🚧 Next: Phase 2 — Circulation core (contribution, catalog, claim/handoff).

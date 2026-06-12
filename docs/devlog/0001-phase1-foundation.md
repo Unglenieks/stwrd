@@ -144,9 +144,12 @@ with no SMTP and no TOTP logs in password-only).
 
 ## Remaining for Phase 1
 
-- [ ] `apps/web` scaffold so `/setup`, `/login`, and `/invite/:token` are
-      reachable end-to-end (runtime-config.json §19.5, Convex Auth provider).
-- [ ] Frontend full-flow verification of 2FA-required login + invite accept +
-      TOTP enrollment (the backend branches are in place and unit-exercised).
+- [x] `apps/web` scaffold with `/setup`, `/login`, `/invite/:token` reachable
+      end-to-end — see [devlog 0002](0002-phase1-frontend.md) (4/4 Playwright
+      smoke tests green against the live backend).
+
+Carried forward (not blocking Phase 1 completion):
+
 - [ ] Argon2id WASM follow-up (see Deviations).
 - [ ] Claim-cancellation on deactivation wires in with the claims module (Phase 2).
+- [ ] Interactive TOTP-enrollment screen + dedicated `/healthz` (Phase 2 UI).

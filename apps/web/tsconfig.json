@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "types": ["vite/client"],
+    "paths": {
+      "~/*": ["./src/*"],
+      "@cvx/*": ["../../convex/_generated/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}
