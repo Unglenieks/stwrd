@@ -76,7 +76,9 @@ function errorResponse(err: unknown): Response {
   const code = err instanceof Error && isErrorCode(err.message) ? err.message : null;
   if (code) return json({ error: code, message: ERROR_MESSAGES[code] }, ERROR_STATUS[code] ?? 400);
   // Anything unexpected (e.g. retrieveAccount throwing on wrong password) is a
-  // generic auth failure — never leak detail.
+  // generic auth failure to the client — never leak detail — but log it
+  // server-side so operators can diagnose.
+  console.error("auth action error:", err);
   return json({ error: "unauthenticated", message: ERROR_MESSAGES.unauthenticated }, 401);
 }
 

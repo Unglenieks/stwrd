@@ -141,7 +141,7 @@ export const createInvite = internalMutation({
     // Duplicate active/invited email → validation_failed (§22.2).
     const existing = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", args.email))
       .first();
     if (existing && existing.status !== "inactive") {
       throw new AppError("validation_failed", "email already in use");

@@ -365,6 +365,11 @@ export const get = query({
       .withIndex("by_item", (q) => q.eq("itemId", itemId))
       .collect();
     const liveClaim = claims.find((c) => LIVE_CLAIM_STATES.includes(c.state)) ?? null;
+    // The live claim id, but only when the viewer is a party to it (claimant or
+    // current holder) — drives the claim checklist on the item page (§16).
+    const iAmParty =
+      liveClaim !== null &&
+      (liveClaim.claimantId === me._id || item.custodianId === me._id);
 
     return {
       _id: item._id,
@@ -387,7 +392,7 @@ export const get = query({
       primaryPhotoUrl: await ctx.storage.getUrl(item.primaryPhotoId),
       isWatching: watching !== null,
       hasLiveClaim: liveClaim !== null,
-      liveClaimId: liveClaim?._id ?? null,
+      myActiveClaimId: iAmParty ? liveClaim!._id : null,
       isMine: item.custodianId === me._id,
     };
   },

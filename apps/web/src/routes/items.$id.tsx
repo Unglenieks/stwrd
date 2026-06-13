@@ -1,10 +1,11 @@
-import { useConvexAuth, usePaginatedQuery, useQuery } from "convex/react";
-import { useEffect } from "react";
+import { useConvexAuth, useMutation, usePaginatedQuery, useQuery } from "convex/react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
 import type { Id } from "@cvx/dataModel";
 import { CONDITION_RUBRIC, PAGE_SIZE_LEDGER } from "@lot/shared";
-import { Button, Card } from "~/components/ui";
+import { Button, Card, FieldError } from "~/components/ui";
+import { ClaimScreen } from "~/components/ClaimScreen";
 import { LEDGER_LABEL, StateBadge } from "~/components/StateBadge";
 
 export const Route = createFileRoute("/items/$id")({
@@ -74,17 +75,19 @@ function ItemDetail() {
               ))}
             </div>
           )}
-          {/* The Claim action lands in Step 4; the live claim checklist replaces
-              it for the parties of an active claim. */}
+          {/* Claim affordance — replaced by the live checklist once the viewer
+              is a party to an active claim (§9, §16). */}
           {item.state === "available" && !item.isMine && (
-            <div className="mt-4 w-40">
-              <Button disabled title="Claiming arrives in the next step">
-                Claim
-              </Button>
-            </div>
+            <ClaimActions itemId={item._id} />
           )}
         </div>
       </div>
+
+      {item.myActiveClaimId && (
+        <div className="mt-6">
+          <ClaimScreen claimId={item.myActiveClaimId} />
+        </div>
+      )}
 
       {item.description && (
         <Card className="mt-6">
@@ -145,6 +148,48 @@ function ItemDetail() {
         </div>
       )}
     </main>
+  );
+}
+
+function ClaimActions({ itemId }: { itemId: Id<"items"> }) {
+  const createClaim = useMutation(api.claims.create);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function claim(purpose: "use" | "repair") {
+    setError(null);
+    setBusy(true);
+    try {
+      await createClaim({ itemId, purpose });
+      // The item page is reactive; myActiveClaimId flips and the checklist shows.
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "";
+      setError(
+        code.includes("item_not_available")
+          ? "Someone just claimed this — you missed it by a moment."
+          : "Could not place the claim.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 space-y-2">
+      <div className="flex gap-2">
+        <div className="w-32">
+          <Button onClick={() => claim("use")} disabled={busy}>
+            Claim to borrow
+          </Button>
+        </div>
+        <div className="w-32">
+          <Button onClick={() => claim("repair")} disabled={busy}>
+            Claim to repair
+          </Button>
+        </div>
+      </div>
+      <FieldError>{error}</FieldError>
+    </div>
   );
 }
 

@@ -19,7 +19,7 @@ export const userByEmail = internalQuery({
   handler: async (ctx, { email }) => {
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", email.toLowerCase()))
+      .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
       .first();
     if (!user) return null;
     return { userId: user._id, status: user.status ?? "active", name: user.name ?? "" };

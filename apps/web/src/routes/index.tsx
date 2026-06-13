@@ -1,9 +1,10 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useConvexAuth, useQuery } from "convex/react";
-import { useEffect } from "react";
+import { useAction, useConvexAuth, useQuery } from "convex/react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
-import { Button, Card } from "~/components/ui";
+import { PERMISSIONS } from "@lot/shared";
+import { Button, Card, Input, Label } from "~/components/ui";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -55,10 +56,64 @@ function SignedInHome() {
             Contribute an item
           </Link>
         </div>
-        <p className="mt-4 text-sm text-slate-500">
-          The claim &amp; handoff flow arrives in the next Phase 2 step.
-        </p>
       </Card>
+      <InviteMember />
     </main>
+  );
+}
+
+function InviteMember() {
+  const perms = useQuery(api.roles.myPermissions);
+  const invite = useAction(api.users.invite);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [link, setLink] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  if (!perms?.includes(PERMISSIONS.usersCreate)) return null;
+
+  async function onInvite(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const { inviteUrl } = await invite({ name, email });
+      setLink(inviteUrl);
+      setName("");
+      setEmail("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="mt-4">
+      <h2 className="mb-3 text-lg font-semibold">Invite a member</h2>
+      <form onSubmit={onInvite} className="flex flex-wrap items-end gap-3">
+        <div className="min-w-40 flex-1">
+          <Label htmlFor="inv-name">Name</Label>
+          <Input id="inv-name" value={name} onChange={(e) => setName(e.target.value)} required />
+        </div>
+        <div className="min-w-40 flex-1">
+          <Label htmlFor="inv-email">Email</Label>
+          <Input
+            id="inv-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="w-32">
+          <Button type="submit" disabled={busy}>
+            Create invite
+          </Button>
+        </div>
+      </form>
+      {link && (
+        <p className="mt-3 break-all text-sm text-slate-600">
+          Invite link: <span data-testid="invite-link">{link}</span>
+        </p>
+      )}
+    </Card>
   );
 }

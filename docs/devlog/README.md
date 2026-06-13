@@ -12,6 +12,7 @@ what was built, why, how it was verified, and any deviations from `spec.md`.
 | 0003 | [Phase 2 · Step 1: Taxonomy (categories + tags)](0003-phase2-step1-taxonomy.md) | 2 | ✅ Done |
 | 0004 | [Phase 2 · Step 2: Media pipeline + contribution](0004-phase2-step2-contribution.md) | 2 | ✅ Done |
 | 0005 | [Phase 2 · Step 3: Catalog & item page + ledger timeline](0005-phase2-step3-catalog.md) | 2 | ✅ Done |
+| 0006 | [Phase 2 · Step 4: Claim & two-party handoff protocol](0006-phase2-step4-claim-handoff.md) | 2 | ✅ Done |
 
 ## Conventions
 

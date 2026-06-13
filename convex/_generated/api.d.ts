@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as authInternal from "../authInternal.js";
 import type * as categories from "../categories.js";
+import type * as claims from "../claims.js";
 import type * as crons from "../crons.js";
 import type * as email from "../email.js";
 import type * as http from "../http.js";
@@ -19,6 +20,7 @@ import type * as lib_crypto from "../lib/crypto.js";
 import type * as lib_exif from "../lib/exif.js";
 import type * as lib_instance from "../lib/instance.js";
 import type * as lib_ledger from "../lib/ledger.js";
+import type * as lib_notify from "../lib/notify.js";
 import type * as lib_passwordCrypto from "../lib/passwordCrypto.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_search from "../lib/search.js";
@@ -43,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authInternal: typeof authInternal;
   categories: typeof categories;
+  claims: typeof claims;
   crons: typeof crons;
   email: typeof email;
   http: typeof http;
@@ -51,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   "lib/exif": typeof lib_exif;
   "lib/instance": typeof lib_instance;
   "lib/ledger": typeof lib_ledger;
+  "lib/notify": typeof lib_notify;
   "lib/passwordCrypto": typeof lib_passwordCrypto;
   "lib/permissions": typeof lib_permissions;
   "lib/search": typeof lib_search;

@@ -94,7 +94,9 @@ export default defineSchema({
     ),
     notificationPref: v.optional(v.union(v.literal("in_app"), v.literal("email"))),
     createdAt: v.optional(v.number()),
-  }).index("by_email", ["email"]),
+    // Index MUST be named "email" — @convex-dev/auth's account-linking looks up
+    // users by an index of that exact name (uniqueUserWithVerifiedEmail).
+  }).index("email", ["email"]),
 
   // §7.2 — roles & assignments.
   roles: defineTable({
