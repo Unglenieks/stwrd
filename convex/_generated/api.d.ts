@@ -14,9 +14,11 @@ import type * as categories from "../categories.js";
 import type * as claims from "../claims.js";
 import type * as crons from "../crons.js";
 import type * as email from "../email.js";
+import type * as emailDrain from "../emailDrain.js";
 import type * as http from "../http.js";
 import type * as items from "../items.js";
 import type * as lib_crypto from "../lib/crypto.js";
+import type * as lib_emailTemplates from "../lib/emailTemplates.js";
 import type * as lib_exif from "../lib/exif.js";
 import type * as lib_instance from "../lib/instance.js";
 import type * as lib_ledger from "../lib/ledger.js";
@@ -27,6 +29,8 @@ import type * as lib_search from "../lib/search.js";
 import type * as lib_tokens from "../lib/tokens.js";
 import type * as lib_totp from "../lib/totp.js";
 import type * as me from "../me.js";
+import type * as notifications from "../notifications.js";
+import type * as retirements from "../retirements.js";
 import type * as roles from "../roles.js";
 import type * as settings from "../settings.js";
 import type * as setup from "../setup.js";
@@ -35,6 +39,7 @@ import type * as tags from "../tags.js";
 import type * as twofactor from "../twofactor.js";
 import type * as twofactorInternal from "../twofactorInternal.js";
 import type * as users from "../users.js";
+import type * as watches from "../watches.js";
 
 import type {
   ApiFromModules,
@@ -49,9 +54,11 @@ declare const fullApi: ApiFromModules<{
   claims: typeof claims;
   crons: typeof crons;
   email: typeof email;
+  emailDrain: typeof emailDrain;
   http: typeof http;
   items: typeof items;
   "lib/crypto": typeof lib_crypto;
+  "lib/emailTemplates": typeof lib_emailTemplates;
   "lib/exif": typeof lib_exif;
   "lib/instance": typeof lib_instance;
   "lib/ledger": typeof lib_ledger;
@@ -62,6 +69,8 @@ declare const fullApi: ApiFromModules<{
   "lib/tokens": typeof lib_tokens;
   "lib/totp": typeof lib_totp;
   me: typeof me;
+  notifications: typeof notifications;
+  retirements: typeof retirements;
   roles: typeof roles;
   settings: typeof settings;
   setup: typeof setup;
@@ -70,6 +79,7 @@ declare const fullApi: ApiFromModules<{
   twofactor: typeof twofactor;
   twofactorInternal: typeof twofactorInternal;
   users: typeof users;
+  watches: typeof watches;
 }>;
 
 /**

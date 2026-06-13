@@ -13,10 +13,12 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContributeRouteImport } from './routes/contribute'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NotificationsIndexRouteImport } from './routes/notifications.index'
 import { Route as MeIndexRouteImport } from './routes/me.index'
 import { Route as ItemsIndexRouteImport } from './routes/items.index'
 import { Route as ItemsIdRouteImport } from './routes/items.$id'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -36,6 +38,11 @@ const ContributeRoute = ContributeRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsIndexRoute = NotificationsIndexRouteImport.update({
+  id: '/notifications/',
+  path: '/notifications/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MeIndexRoute = MeIndexRouteImport.update({
@@ -58,26 +65,35 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
   path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/invite/$token': typeof InviteTokenRoute
   '/items/$id': typeof ItemsIdRoute
   '/items/': typeof ItemsIndexRoute
   '/me/': typeof MeIndexRoute
+  '/notifications/': typeof NotificationsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/invite/$token': typeof InviteTokenRoute
   '/items/$id': typeof ItemsIdRoute
   '/items': typeof ItemsIndexRoute
   '/me': typeof MeIndexRoute
+  '/notifications': typeof NotificationsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -85,10 +101,12 @@ export interface FileRoutesById {
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/invite/$token': typeof InviteTokenRoute
   '/items/$id': typeof ItemsIdRoute
   '/items/': typeof ItemsIndexRoute
   '/me/': typeof MeIndexRoute
+  '/notifications/': typeof NotificationsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,30 +115,36 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/settings'
     | '/invite/$token'
     | '/items/$id'
     | '/items/'
     | '/me/'
+    | '/notifications/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/settings'
     | '/invite/$token'
     | '/items/$id'
     | '/items'
     | '/me'
+    | '/notifications'
   id:
     | '__root__'
     | '/'
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/settings'
     | '/invite/$token'
     | '/items/$id'
     | '/items/'
     | '/me/'
+    | '/notifications/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -128,10 +152,12 @@ export interface RootRouteChildren {
   ContributeRoute: typeof ContributeRoute
   LoginRoute: typeof LoginRoute
   SetupRoute: typeof SetupRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   InviteTokenRoute: typeof InviteTokenRoute
   ItemsIdRoute: typeof ItemsIdRoute
   ItemsIndexRoute: typeof ItemsIndexRoute
   MeIndexRoute: typeof MeIndexRoute
+  NotificationsIndexRoute: typeof NotificationsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -164,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notifications/': {
+      id: '/notifications/'
+      path: '/notifications'
+      fullPath: '/notifications/'
+      preLoaderRoute: typeof NotificationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/me/': {
       id: '/me/'
       path: '/me'
@@ -192,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -200,10 +240,12 @@ const rootRouteChildren: RootRouteChildren = {
   ContributeRoute: ContributeRoute,
   LoginRoute: LoginRoute,
   SetupRoute: SetupRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   InviteTokenRoute: InviteTokenRoute,
   ItemsIdRoute: ItemsIdRoute,
   ItemsIndexRoute: ItemsIndexRoute,
   MeIndexRoute: MeIndexRoute,
+  NotificationsIndexRoute: NotificationsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

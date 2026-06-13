@@ -1,5 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useAction, useConvexAuth, useQuery } from "convex/react";
+import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
@@ -29,13 +29,27 @@ function SignedInHome() {
   const me = useQuery(api.users.me);
   const { signOut } = useAuthActions();
   const settings = useQuery(api.settings.get);
+  const unread = useQuery(api.notifications.unreadCount) ?? 0;
 
   return (
     <main className="mx-auto max-w-2xl p-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{settings?.orgName ?? "Library of Things"}</h1>
-        <div className="w-28">
-          <Button onClick={() => void signOut()}>Sign out</Button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/notifications"
+            className="relative inline-flex h-10 items-center rounded-md border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            🔔
+            {unread > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs text-white">
+                {unread}
+              </span>
+            )}
+          </Link>
+          <div className="w-28">
+            <Button onClick={() => void signOut()}>Sign out</Button>
+          </div>
         </div>
       </div>
       <Card>
@@ -62,9 +76,27 @@ function SignedInHome() {
             My library
           </Link>
         </div>
+        <NotificationPref pref={me?.notificationPref} />
       </Card>
       <InviteMember />
     </main>
+  );
+}
+
+function NotificationPref({ pref }: { pref?: "in_app" | "email" }) {
+  const update = useMutation(api.users.updateProfile);
+  if (!pref) return null;
+  return (
+    <label className="mt-4 flex items-center gap-2 text-sm text-slate-600">
+      <input
+        type="checkbox"
+        checked={pref === "email"}
+        onChange={(e) =>
+          void update({ notificationPref: e.target.checked ? "email" : "in_app" })
+        }
+      />
+      Also email me notifications
+    </label>
   );
 }
 

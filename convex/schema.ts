@@ -232,7 +232,9 @@ export default defineSchema({
       ),
     ),
     createdAt: v.number(),
-  }).index("by_user_read", ["userId", "read"]),
+  })
+    .index("by_user_read", ["userId", "read"])
+    .index("by_user", ["userId"]),
 
   // §7.9 — emailOutbox (written by mutations, drained by an action; doubles as delivery log).
   emailOutbox: defineTable({

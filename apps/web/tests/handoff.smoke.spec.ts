@@ -43,8 +43,8 @@ test("two-party handoff moves custody (C-06)", async ({ browser }) => {
   await admin.getByRole("button", { name: "Add to the library" }).click();
   await expect(admin.getByText(/Signed in as/i)).toBeVisible({ timeout: 20_000 });
 
-  await admin.getByLabel("Name").fill("Claimant");
-  await admin.getByLabel("Email").fill(claimantEmail);
+  await admin.getByLabel("Name", { exact: true }).fill("Claimant");
+  await admin.getByLabel("Email", { exact: true }).fill(claimantEmail);
   await admin.getByRole("button", { name: "Create invite" }).click();
   const inviteUrl = await admin.getByTestId("invite-link").textContent();
   expect(inviteUrl).toContain("/invite/");

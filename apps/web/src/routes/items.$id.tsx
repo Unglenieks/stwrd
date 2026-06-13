@@ -6,6 +6,8 @@ import type { Id } from "@cvx/dataModel";
 import { CONDITION_RUBRIC, PAGE_SIZE_LEDGER } from "@lot/shared";
 import { Button, Card, FieldError } from "~/components/ui";
 import { ClaimScreen } from "~/components/ClaimScreen";
+import { StewardControls } from "~/components/StewardControls";
+import { WatchButton } from "~/components/WatchButton";
 import { LEDGER_LABEL, StateBadge } from "~/components/StateBadge";
 
 export const Route = createFileRoute("/items/$id")({
@@ -54,7 +56,10 @@ function ItemDetail() {
           <div className="mb-2 flex items-center gap-2">
             <h1 className="text-2xl font-semibold">{item.title}</h1>
           </div>
-          <StateBadge state={item.state} />
+          <div className="flex items-center gap-3">
+            <StateBadge state={item.state} />
+            <WatchButton itemId={item._id} watching={item.isWatching} />
+          </div>
           <dl className="mt-4 space-y-1 text-sm">
             <Row label="Condition">
               {item.conditionRating}/5 — {rubric?.label}
@@ -88,6 +93,10 @@ function ItemDetail() {
           <ClaimScreen claimId={item.myActiveClaimId} />
         </div>
       )}
+
+      <div className="mt-6">
+        <StewardControls item={item} />
+      </div>
 
       {item.description && (
         <Card className="mt-6">

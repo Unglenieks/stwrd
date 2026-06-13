@@ -20,7 +20,7 @@ import {
 } from "./_generated/server";
 import { claimExpiryMs } from "./lib/instance";
 import { appendLedger, getItemOrThrow } from "./lib/ledger";
-import { notify } from "./lib/notify";
+import { notify, notifyWatchers } from "./lib/notify";
 import { getEffectivePermissions, requirePermission, requireUser } from "./lib/permissions";
 import { verifyPhotos } from "./storage";
 
@@ -213,6 +213,8 @@ export const cancel = mutation({
       itemTitle: item.title,
       reason,
     });
+    // The item is available again — fire the watchers' starting gun (§9.5).
+    await notifyWatchers(ctx, item._id, item.title, user._id);
   },
 });
 
@@ -254,6 +256,8 @@ export const sweepExpired = internalMutation({
           reason: "expired",
         });
       }
+      // Available again → notify watchers (no human actor; holder excepted).
+      await notifyWatchers(ctx, item._id, item.title, item.custodianId);
     }
   },
 });

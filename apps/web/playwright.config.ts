@@ -7,6 +7,11 @@ export default defineConfig({
   testDir: "./tests",
   timeout: 30_000,
   fullyParallel: false,
+  // One worker: the suite runs against a single shared live backend, and a few
+  // tests mutate global state (e.g. SMTP config), so serial execution keeps them
+  // deterministic. (The email test needs a mailpit catcher on the backend's
+  // docker network — see docs.)
+  workers: 1,
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",

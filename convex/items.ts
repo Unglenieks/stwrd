@@ -20,6 +20,7 @@ import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { action, internalMutation, mutation, query } from "./_generated/server";
 import { appendLedger, getItemOrThrow } from "./lib/ledger";
+import { notifyWatchers } from "./lib/notify";
 import { getEffectivePermissions, requirePermission, requireUser } from "./lib/permissions";
 import { buildSearchText } from "./lib/search";
 import { verifyPhotos } from "./storage";
@@ -235,6 +236,7 @@ export const markAvailable = mutation({
       actorId: user._id,
       branchId: args.branchId,
     });
+    await notifyWatchers(ctx, item._id, item.title, user._id); // §9.5 (suppress actor)
   },
 });
 
@@ -256,6 +258,117 @@ export const withdrawListing = mutation({
       type: "status_update",
       actorId: user._id,
       note: "listing withdrawn",
+    });
+  },
+});
+
+// ── Repair (§10, §22.2) ──────────────────────────────────────────────────────
+
+export const repairStart = action({
+  args: { itemId: v.id("items"), note: v.string(), photoIds: v.optional(v.array(v.id("_storage"))) },
+  handler: async (ctx, args): Promise<void> => {
+    if (!(await getAuthUserId(ctx))) throw new AppError("unauthenticated");
+    if (args.photoIds && args.photoIds.length > 0) await verifyPhotos(ctx, args.photoIds);
+    await ctx.runMutation(internal.items.applyRepairStart, {
+      itemId: args.itemId,
+      note: args.note,
+      photoIds: args.photoIds ?? [],
+    });
+  },
+});
+
+export const applyRepairStart = internalMutation({
+  args: { itemId: v.id("items"), note: v.string(), photoIds: v.array(v.id("_storage")) },
+  handler: async (ctx, args) => {
+    const item = await getItemOrThrow(ctx, args.itemId);
+    const user = await requireUser(ctx);
+    if (item.custodianId !== user._id) throw new AppError("forbidden");
+    if (item.state !== "under_repair") throw new AppError("state_conflict");
+    await appendLedger(ctx, item, {
+      type: "repair_started",
+      actorId: user._id,
+      note: args.note,
+      photoFileIds: args.photoIds,
+    });
+  },
+});
+
+/** Finish a repair: UNDER_REPAIR → IN_CUSTODY, raising the condition (§10.4). */
+export const repairComplete = action({
+  args: {
+    itemId: v.id("items"),
+    note: v.string(),
+    photoIds: v.optional(v.array(v.id("_storage"))),
+    newCondition: v.number(),
+  },
+  handler: async (ctx, args): Promise<void> => {
+    if (!(await getAuthUserId(ctx))) throw new AppError("unauthenticated");
+    if (args.photoIds && args.photoIds.length > 0) await verifyPhotos(ctx, args.photoIds);
+    await ctx.runMutation(internal.items.applyRepairComplete, {
+      itemId: args.itemId,
+      note: args.note,
+      photoIds: args.photoIds ?? [],
+      newCondition: args.newCondition,
+    });
+  },
+});
+
+export const applyRepairComplete = internalMutation({
+  args: {
+    itemId: v.id("items"),
+    note: v.string(),
+    photoIds: v.array(v.id("_storage")),
+    newCondition: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const item = await getItemOrThrow(ctx, args.itemId);
+    const user = await requireUser(ctx);
+    if (item.custodianId !== user._id) throw new AppError("forbidden");
+    if (item.state !== "under_repair") throw new AppError("state_conflict");
+    await ctx.db.patch(item._id, { state: "in_custody", conditionRating: args.newCondition });
+    await appendLedger(ctx, await getItemOrThrow(ctx, item._id), {
+      type: "repair_completed",
+      actorId: user._id,
+      note: args.note,
+      photoFileIds: args.photoIds,
+      conditionRating: args.newCondition,
+    });
+  },
+});
+
+// ── Retirement: proposal side (§11, §22.2) ───────────────────────────────────
+
+export const proposeRetirement = action({
+  args: { itemId: v.id("items"), reason: v.string(), photoIds: v.array(v.id("_storage")) },
+  handler: async (ctx, args): Promise<void> => {
+    if (!(await getAuthUserId(ctx))) throw new AppError("unauthenticated");
+    if (args.photoIds.length < 1) throw new AppError("validation_failed", "≥1 photo required");
+    await verifyPhotos(ctx, args.photoIds);
+    await ctx.runMutation(internal.items.applyProposeRetirement, args);
+  },
+});
+
+export const applyProposeRetirement = internalMutation({
+  args: { itemId: v.id("items"), reason: v.string(), photoIds: v.array(v.id("_storage")) },
+  handler: async (ctx, args) => {
+    const item = await getItemOrThrow(ctx, args.itemId);
+    const user = await requireUser(ctx);
+    const perms = await getEffectivePermissions(ctx, user._id);
+    if (item.custodianId !== user._id || !perms.has(PERMISSIONS.itemsRetirePropose)) {
+      throw new AppError("forbidden");
+    }
+    if (item.state === "retired" || item.state === "claimed") throw new AppError("state_conflict");
+    // No live claim (proposal during AVAILABLE/IN_CUSTODY/UNDER_REPAIR is fine).
+    const live = await ctx.db
+      .query("claims")
+      .withIndex("by_item_state", (q) => q.eq("itemId", item._id).eq("state", "pending"))
+      .first();
+    if (live) throw new AppError("state_conflict", "live claim");
+    await appendLedger(ctx, item, {
+      type: "retirement_proposed",
+      actorId: user._id,
+      reason: args.reason,
+      photoFileIds: args.photoIds,
     });
   },
 });
@@ -371,6 +484,22 @@ export const get = query({
       liveClaim !== null &&
       (liveClaim.claimantId === me._id || item.custodianId === me._id);
 
+    // Is there an open retirement proposal? (latest retirement-lifecycle entry is
+    // a proposal). Drives the approver decision card (§11).
+    const recentLedger = await ctx.db
+      .query("ledgerEntries")
+      .withIndex("by_item_seq", (q) => q.eq("itemId", itemId))
+      .order("desc")
+      .take(50);
+    let retirementProposed = false;
+    for (const e of recentLedger) {
+      if (e.type === "retirement_proposed") {
+        retirementProposed = true;
+        break;
+      }
+      if (e.type === "retired" || e.type === "retirement_denied") break;
+    }
+
     return {
       _id: item._id,
       title: item.title,
@@ -394,6 +523,7 @@ export const get = query({
       hasLiveClaim: liveClaim !== null,
       myActiveClaimId: iAmParty ? liveClaim!._id : null,
       isMine: item.custodianId === me._id,
+      retirementProposed,
     };
   },
 });

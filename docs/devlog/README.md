@@ -14,6 +14,7 @@ what was built, why, how it was verified, and any deviations from `spec.md`.
 | 0005 | [Phase 2 · Step 3: Catalog & item page + ledger timeline](0005-phase2-step3-catalog.md) | 2 | ✅ Done |
 | 0006 | [Phase 2 · Step 4: Claim & two-party handoff protocol](0006-phase2-step4-claim-handoff.md) | 2 | ✅ Done |
 | 0007 | [Phase 2 · Step 5: Expiry cron & lifecycle polish](0007-phase2-step5-expiry-polish.md) | 2 | ✅ Done |
+| 0008 | [Phase 3: Stewardship](0008-phase3-stewardship.md) | 3 | ✅ Done |
 
 ## Conventions
 

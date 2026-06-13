@@ -65,4 +65,10 @@ upload), claim, complete a photo-verified two-party handoff that moves custody,
 follow the immutable ledger timeline, and manage everything from My library —
 unclaimed claims expire automatically. **End of phase 2 = a usable library.**
 
-🚧 Next: Phase 3 — Stewardship (repair, retirement, watching, notifications + SMTP).
+✅ **Phase 3 — Stewardship complete**: repair + retirement workflows, watching
+(watch a free item → get the starting gun), the notifications inbox (🔔 + unread
+badge), per-account email preference, and a working **SMTP outbox** (templated
+mail drained on a cron via Nodemailer; verified end-to-end against a mailpit
+catcher).
+
+🚧 Next: Phase 4 — Branches & inbound email (branch drop points, IMAP poll, admin queues).

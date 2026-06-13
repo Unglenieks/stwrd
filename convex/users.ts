@@ -121,18 +121,20 @@ export const invite = action({
   ): Promise<{ inviteUrl: string; emailQueued: boolean }> => {
     const rawToken = generateToken();
     const tokenHash = await hashToken(rawToken);
+    const site = process.env.SITE_URL ?? "";
+    const inviteUrl = `${site}/invite/${rawToken}`;
     const emailQueued: boolean = await ctx.runMutation(internal.users.createInvite, {
       name: args.name,
       email: args.email.toLowerCase(),
       tokenHash,
+      inviteUrl,
     });
-    const site = process.env.SITE_URL ?? "";
-    return { inviteUrl: `${site}/invite/${rawToken}`, emailQueued };
+    return { inviteUrl, emailQueued };
   },
 });
 
 export const createInvite = internalMutation({
-  args: { name: v.string(), email: v.string(), tokenHash: v.string() },
+  args: { name: v.string(), email: v.string(), tokenHash: v.string(), inviteUrl: v.string() },
   handler: async (ctx, args): Promise<boolean> => {
     const actorId = await currentUserId(ctx);
     if (!actorId) throw new AppError("unauthenticated");
@@ -188,7 +190,7 @@ export const createInvite = internalMutation({
       await enqueueEmail(ctx, {
         to: args.email,
         template: "invite",
-        payload: { name: args.name },
+        payload: { name: args.name, inviteUrl: args.inviteUrl },
       });
     }
 

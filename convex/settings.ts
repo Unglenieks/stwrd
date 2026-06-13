@@ -6,10 +6,29 @@ import {
   CLAIM_EXPIRY_HOURS_MIN,
   PERMISSIONS,
 } from "@lot/shared";
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 import { encryptSecret } from "./lib/crypto";
 import { getSettings, isSetupComplete, recordAudit } from "./lib/instance";
 import { requirePermission } from "./lib/permissions";
+
+/** Assert the caller may edit settings — used by the Node testSmtp action. */
+export const requireSettingsAccess = query({
+  args: {},
+  handler: async (ctx) => {
+    await requirePermission(ctx, PERMISSIONS.instanceSettings);
+    return true;
+  },
+});
+
+/** Encrypted SMTP config + org name, for the Node send actions only (§13). */
+export const smtpForSend = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const s = await getSettings(ctx);
+    if (!s?.smtp) return null;
+    return { orgName: s.orgName, smtp: s.smtp };
+  },
+});
 
 /**
  * Public-shape settings (no secrets). The hostname is read-only here — the

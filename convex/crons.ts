@@ -14,6 +14,9 @@ crons.interval("claim expiry sweep", { minutes: 15 }, internal.claims.sweepExpir
 // Claim-expiring notifier — hourly (§23.2, C-09).
 crons.interval("claim expiring notifier", { hours: 1 }, internal.claims.notifyExpiring, {});
 
+// Email outbox drain — every 1 min (§13, §23.2).
+crons.interval("email outbox drain", { minutes: 1 }, internal.emailDrain.drainOutbox, {});
+
 // Phase 3: email outbox drain — every 1 min (§13, §23.2).
 // crons.interval("email outbox drain", { minutes: 1 }, internal.email.drainOutbox, {});
 
