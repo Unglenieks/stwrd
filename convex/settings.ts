@@ -30,6 +30,15 @@ export const smtpForSend = internalQuery({
   },
 });
 
+/** Encrypted IMAP config, for the Node poll action only (§13). */
+export const imapForPoll = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const s = await getSettings(ctx);
+    return s?.imap ?? null;
+  },
+});
+
 /**
  * Public-shape settings (no secrets). The hostname is read-only here — the
  * single source of truth is PUBLIC_SITE_ORIGIN in the environment (§19.5).

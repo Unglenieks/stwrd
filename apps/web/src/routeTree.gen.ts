@@ -16,9 +16,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as NotificationsIndexRouteImport } from './routes/notifications.index'
 import { Route as MeIndexRouteImport } from './routes/me.index'
 import { Route as ItemsIndexRouteImport } from './routes/items.index'
+import { Route as BranchesIndexRouteImport } from './routes/branches.index'
 import { Route as ItemsIdRouteImport } from './routes/items.$id'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as BranchesIdRouteImport } from './routes/branches.$id'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminClaimsRouteImport } from './routes/admin.claims'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -55,6 +58,11 @@ const ItemsIndexRoute = ItemsIndexRouteImport.update({
   path: '/items/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BranchesIndexRoute = BranchesIndexRouteImport.update({
+  id: '/branches/',
+  path: '/branches/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ItemsIdRoute = ItemsIdRouteImport.update({
   id: '/items/$id',
   path: '/items/$id',
@@ -65,9 +73,19 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
   path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BranchesIdRoute = BranchesIdRouteImport.update({
+  id: '/branches/$id',
+  path: '/branches/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/admin/settings',
   path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminClaimsRoute = AdminClaimsRouteImport.update({
+  id: '/admin/claims',
+  path: '/admin/claims',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -76,9 +94,12 @@ export interface FileRoutesByFullPath {
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/claims': typeof AdminClaimsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/branches/$id': typeof BranchesIdRoute
   '/invite/$token': typeof InviteTokenRoute
   '/items/$id': typeof ItemsIdRoute
+  '/branches/': typeof BranchesIndexRoute
   '/items/': typeof ItemsIndexRoute
   '/me/': typeof MeIndexRoute
   '/notifications/': typeof NotificationsIndexRoute
@@ -88,9 +109,12 @@ export interface FileRoutesByTo {
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/claims': typeof AdminClaimsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/branches/$id': typeof BranchesIdRoute
   '/invite/$token': typeof InviteTokenRoute
   '/items/$id': typeof ItemsIdRoute
+  '/branches': typeof BranchesIndexRoute
   '/items': typeof ItemsIndexRoute
   '/me': typeof MeIndexRoute
   '/notifications': typeof NotificationsIndexRoute
@@ -101,9 +125,12 @@ export interface FileRoutesById {
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/claims': typeof AdminClaimsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/branches/$id': typeof BranchesIdRoute
   '/invite/$token': typeof InviteTokenRoute
   '/items/$id': typeof ItemsIdRoute
+  '/branches/': typeof BranchesIndexRoute
   '/items/': typeof ItemsIndexRoute
   '/me/': typeof MeIndexRoute
   '/notifications/': typeof NotificationsIndexRoute
@@ -115,9 +142,12 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/claims'
     | '/admin/settings'
+    | '/branches/$id'
     | '/invite/$token'
     | '/items/$id'
+    | '/branches/'
     | '/items/'
     | '/me/'
     | '/notifications/'
@@ -127,9 +157,12 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/claims'
     | '/admin/settings'
+    | '/branches/$id'
     | '/invite/$token'
     | '/items/$id'
+    | '/branches'
     | '/items'
     | '/me'
     | '/notifications'
@@ -139,9 +172,12 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/claims'
     | '/admin/settings'
+    | '/branches/$id'
     | '/invite/$token'
     | '/items/$id'
+    | '/branches/'
     | '/items/'
     | '/me/'
     | '/notifications/'
@@ -152,9 +188,12 @@ export interface RootRouteChildren {
   ContributeRoute: typeof ContributeRoute
   LoginRoute: typeof LoginRoute
   SetupRoute: typeof SetupRoute
+  AdminClaimsRoute: typeof AdminClaimsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  BranchesIdRoute: typeof BranchesIdRoute
   InviteTokenRoute: typeof InviteTokenRoute
   ItemsIdRoute: typeof ItemsIdRoute
+  BranchesIndexRoute: typeof BranchesIndexRoute
   ItemsIndexRoute: typeof ItemsIndexRoute
   MeIndexRoute: typeof MeIndexRoute
   NotificationsIndexRoute: typeof NotificationsIndexRoute
@@ -211,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ItemsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/branches/': {
+      id: '/branches/'
+      path: '/branches'
+      fullPath: '/branches/'
+      preLoaderRoute: typeof BranchesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/items/$id': {
       id: '/items/$id'
       path: '/items/$id'
@@ -225,11 +271,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/branches/$id': {
+      id: '/branches/$id'
+      path: '/branches/$id'
+      fullPath: '/branches/$id'
+      preLoaderRoute: typeof BranchesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/admin/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/claims': {
+      id: '/admin/claims'
+      path: '/admin/claims'
+      fullPath: '/admin/claims'
+      preLoaderRoute: typeof AdminClaimsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -240,9 +300,12 @@ const rootRouteChildren: RootRouteChildren = {
   ContributeRoute: ContributeRoute,
   LoginRoute: LoginRoute,
   SetupRoute: SetupRoute,
+  AdminClaimsRoute: AdminClaimsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  BranchesIdRoute: BranchesIdRoute,
   InviteTokenRoute: InviteTokenRoute,
   ItemsIdRoute: ItemsIdRoute,
+  BranchesIndexRoute: BranchesIndexRoute,
   ItemsIndexRoute: ItemsIndexRoute,
   MeIndexRoute: MeIndexRoute,
   NotificationsIndexRoute: NotificationsIndexRoute,

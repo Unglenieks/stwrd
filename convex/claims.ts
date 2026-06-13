@@ -18,7 +18,7 @@ import {
   query,
   type MutationCtx,
 } from "./_generated/server";
-import { claimExpiryMs } from "./lib/instance";
+import { claimExpiryMs, recordAudit } from "./lib/instance";
 import { appendLedger, getItemOrThrow } from "./lib/ledger";
 import { notify, notifyWatchers } from "./lib/notify";
 import { getEffectivePermissions, requirePermission, requireUser } from "./lib/permissions";
@@ -59,6 +59,8 @@ export const create = mutation({
       staging: false,
       state: "pending",
       exchangeMode: item.exchangePref,
+      // Branch listings carry their branch onto the claim (the drop point).
+      branchId: item.exchangePref === "branch" ? item.atBranchId : undefined,
       contactRevealed: item.exchangePref === "reveal_contact",
       receiverPhotoIds: [],
       expiresAt: now + (await claimExpiryMs(ctx)),
@@ -71,6 +73,60 @@ export const create = mutation({
       claimId,
     });
     await notify(ctx, item.custodianId, "claim_placed", {
+      claimId,
+      itemId: item._id,
+      itemTitle: item.title,
+      otherPartyName: user.name ?? "A member",
+    });
+    return claimId;
+  },
+});
+
+/**
+ * Park an UNCLAIMED item with a branch host (§12, C-13). A real custody transfer
+ * to the host, run through the standard claim machinery with the host as
+ * receiver: the depositor drops it off and the host confirms receipt, after which
+ * finalize leaves the item IN_CUSTODY under the host with placed_at_branch. The
+ * host then one-taps "list it" (markAvailable).
+ */
+export const createStaging = mutation({
+  args: { itemId: v.id("items"), branchId: v.id("branches") },
+  handler: async (ctx, args): Promise<Id<"claims">> => {
+    const user = await requireUser(ctx);
+    const item = await getItemOrThrow(ctx, args.itemId);
+    if (item.custodianId !== user._id) throw new AppError("forbidden");
+    if (item.state !== "available" && item.state !== "in_custody") {
+      throw new AppError("state_conflict");
+    }
+    if (await liveClaimForItem(ctx, args.itemId)) throw new AppError("state_conflict");
+    const branch = await ctx.db.get(args.branchId);
+    if (!branch) throw new AppError("not_found");
+    if (branch.status !== "active") throw new AppError("state_conflict", "branch inactive");
+    if (branch.hostUserId === user._id) {
+      throw new AppError("state_conflict", "you host this branch — list it with branch mode instead");
+    }
+
+    const now = Date.now();
+    const claimId = await ctx.db.insert("claims", {
+      itemId: args.itemId,
+      claimantId: branch.hostUserId, // the host receives it into their care
+      purpose: "use",
+      staging: true,
+      state: "pending",
+      exchangeMode: "branch",
+      branchId: args.branchId,
+      contactRevealed: false,
+      receiverPhotoIds: [],
+      expiresAt: now + (await claimExpiryMs(ctx)),
+      createdAt: now,
+    });
+    await ctx.db.patch(item._id, { state: "claimed" });
+    await appendLedger(ctx, await getItemOrThrow(ctx, args.itemId), {
+      type: "claimed",
+      actorId: user._id,
+      claimId,
+    });
+    await notify(ctx, branch.hostUserId, "claim_placed", {
       claimId,
       itemId: item._id,
       itemTitle: item.title,
@@ -98,6 +154,20 @@ export const confirmGiver = mutation({
       giverConfirmedAt: Date.now(),
       state: claim.receiverConfirmedAt ? "receiver_confirmed" : "giver_confirmed",
     });
+    // Branch drop-off: the "dropped off" tap records placed_at_branch (§12). The
+    // item carries the branch flag (set when listed) and is now physically in the
+    // host's box until pickup.
+    if (claim.branchId && !claim.staging) {
+      if (item.atBranchId !== claim.branchId) {
+        await ctx.db.patch(item._id, { atBranchId: claim.branchId });
+      }
+      await appendLedger(ctx, await getItemOrThrow(ctx, item._id), {
+        type: "placed_at_branch",
+        actorId: user._id,
+        branchId: claim.branchId,
+        claimId,
+      });
+    }
     if (claim.receiverConfirmedAt) {
       await finalizeHandoff(ctx, claimId);
     } else {
@@ -154,11 +224,15 @@ async function finalizeHandoff(ctx: MutationCtx, claimId: Id<"claims">): Promise
   const receiverId = claim.claimantId;
   if (!claim.receiverPhotoIds.length) throw new AppError("photo_required"); // invariant guard (C-08)
 
+  // Staging (§12): a deposit into a branch host's care — the item STAYS at the
+  // branch under the host. A normal claim moves custody to the claimant and, if
+  // it was sitting in a branch box, removes it from the branch.
+  const staged = claim.staging && claim.branchId;
   await ctx.db.patch(item._id, {
     custodianId: receiverId,
     state: claim.purpose === "repair" ? "under_repair" : "in_custody",
     conditionRating: claim.receiverCondition ?? item.conditionRating,
-    atBranchId: undefined,
+    atBranchId: staged ? claim.branchId : undefined,
   });
   await ctx.db.patch(claimId, { state: "completed" });
   await appendLedger(ctx, await getItemOrThrow(ctx, item._id), {
@@ -169,6 +243,22 @@ async function finalizeHandoff(ctx: MutationCtx, claimId: Id<"claims">): Promise
     conditionRating: claim.receiverCondition,
     photoFileIds: claim.receiverPhotoIds,
   });
+  if (staged) {
+    await appendLedger(ctx, await getItemOrThrow(ctx, item._id), {
+      type: "placed_at_branch",
+      actorId: receiverId,
+      branchId: claim.branchId,
+      claimId,
+    });
+  } else if (claim.branchId && item.atBranchId === claim.branchId) {
+    // Picked up from the branch box.
+    await appendLedger(ctx, await getItemOrThrow(ctx, item._id), {
+      type: "removed_from_branch",
+      actorId: receiverId,
+      branchId: claim.branchId,
+      claimId,
+    });
+  }
   for (const uid of [giverId, receiverId]) {
     await notify(ctx, uid, "handoff_completed", {
       claimId,
@@ -288,6 +378,69 @@ export const notifyExpiring = internalMutation({
         hoursLeft,
       });
       await ctx.db.patch(claim._id, { expiringNotifiedAt: now });
+    }
+  },
+});
+
+// ── Admin resolution of stuck handoffs (§9.3, §22.2) ─────────────────────────
+
+export const adminResolve = mutation({
+  args: {
+    claimId: v.id("claims"),
+    resolution: v.union(v.literal("force_complete"), v.literal("force_cancel")),
+    note: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const admin = await requirePermission(ctx, PERMISSIONS.claimsManageAny);
+    const claim = await ctx.db.get(args.claimId);
+    if (!claim) throw new AppError("not_found");
+    if (TERMINAL.includes(claim.state)) throw new AppError("claim_not_pending");
+    const item = await getItemOrThrow(ctx, claim.itemId);
+
+    if (args.resolution === "force_complete") {
+      // Force-complete records an admin_transfer — NEVER a synthetic
+      // handoff_completed (the photo invariant is absolute, §9.3/C-11).
+      const giverId = item.custodianId;
+      await ctx.db.patch(item._id, {
+        custodianId: claim.claimantId,
+        state: claim.purpose === "repair" ? "under_repair" : "in_custody",
+        atBranchId: undefined,
+      });
+      await ctx.db.patch(claim._id, { state: "completed" });
+      await appendLedger(ctx, await getItemOrThrow(ctx, item._id), {
+        type: "admin_transfer",
+        actorId: admin._id,
+        counterpartyId: claim.claimantId,
+        claimId: claim._id,
+        note: args.note,
+      });
+      void giverId;
+    } else {
+      await ctx.db.patch(claim._id, { state: "cancelled" });
+      await ctx.db.patch(item._id, { state: "available" });
+      await appendLedger(ctx, await getItemOrThrow(ctx, item._id), {
+        type: "claim_cancelled",
+        actorId: admin._id,
+        claimId: claim._id,
+        reason: "admin",
+        note: args.note,
+      });
+      await notifyWatchers(ctx, item._id, item.title, admin._id);
+    }
+    await recordAudit(ctx, {
+      actorId: admin._id,
+      action: `claim.${args.resolution}`,
+      targetId: claim._id,
+      detail: { note: args.note },
+    });
+    const kind = args.resolution === "force_complete" ? "handoff_completed" : "claim_cancelled";
+    for (const uid of [claim.claimantId, item.custodianId]) {
+      await notify(ctx, uid, kind, {
+        claimId: claim._id,
+        itemId: item._id,
+        itemTitle: item.title,
+        reason: "admin",
+      });
     }
   },
 });

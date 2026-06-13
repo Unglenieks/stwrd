@@ -228,6 +228,8 @@ export const markAvailable = mutation({
     await ctx.db.patch(item._id, {
       state: "available",
       exchangePref: args.exchangeMode,
+      // Flag the item to its listing branch (cleared for a reveal-contact listing).
+      atBranchId: args.exchangeMode === "branch" ? args.branchId : undefined,
       lastAvailableAt: now,
     });
     const fresh = await getItemOrThrow(ctx, args.itemId);

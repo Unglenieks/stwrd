@@ -16,6 +16,7 @@ import {
 } from "./_generated/server";
 import { enqueueEmail } from "./email";
 import { recordAudit } from "./lib/instance";
+import { appendLedger } from "./lib/ledger";
 import {
   assertNotLastAdminRemoval,
   currentUserId,
@@ -218,15 +219,65 @@ export const deactivate = mutation({
 
     await ctx.db.patch(args.userId, { status: "inactive" });
 
-    // Auto-cancel the member's pending claims as admin cancellations, and route
-    // their held items to the recovery queue. Claim cancellation is wired with
-    // the claims module in Phase 2; held items surface via admin.recoveryQueue
-    // (a query over inactive custodians). Status flip already blocks their login.
+    // Auto-cancel their pending claims (as the claimant) as admin cancellations
+    // (§6.4, C-17); their held items surface via admin.recoveryQueue (a query over
+    // inactive custodians). Status flip already blocks login.
+    const theirClaims = await ctx.db
+      .query("claims")
+      .withIndex("by_claimant", (q) => q.eq("claimantId", args.userId))
+      .collect();
+    for (const claim of theirClaims) {
+      if (!["pending", "giver_confirmed", "receiver_confirmed"].includes(claim.state)) continue;
+      const item = await ctx.db.get(claim.itemId);
+      if (!item) continue;
+      await ctx.db.patch(claim._id, { state: "cancelled" });
+      if (item.state === "claimed") await ctx.db.patch(item._id, { state: "available" });
+      await appendLedger(ctx, (await ctx.db.get(item._id))!, {
+        type: "claim_cancelled",
+        actorId: actor._id,
+        claimId: claim._id,
+        reason: "admin",
+        note: "claimant deactivated",
+      });
+    }
+
     await recordAudit(ctx, {
       actorId: actor._id,
       action: "user.deactivate",
       targetId: args.userId,
       detail: { email: target.email },
+    });
+  },
+});
+
+/** Administrative custody correction, e.g. recovering an inactive member's item
+ *  (§6.4, §22.2). Records an admin_transfer ledger entry. */
+export const adminTransfer = mutation({
+  args: { itemId: v.id("items"), newCustodianId: v.id("users"), note: v.string() },
+  handler: async (ctx, args) => {
+    const actor = await requireUser(ctx);
+    const perms = await getEffectivePermissions(ctx, actor._id);
+    if (!perms.has(PERMISSIONS.itemsEditAny) || !perms.has(PERMISSIONS.claimsManageAny)) {
+      throw new AppError("forbidden");
+    }
+    const item = await ctx.db.get(args.itemId);
+    if (!item) throw new AppError("not_found");
+    if (item.state === "retired" || item.state === "claimed") throw new AppError("state_conflict");
+    const newCustodian = await ctx.db.get(args.newCustodianId);
+    if (!newCustodian) throw new AppError("not_found");
+
+    await ctx.db.patch(item._id, { custodianId: args.newCustodianId, atBranchId: undefined });
+    await appendLedger(ctx, (await ctx.db.get(item._id))!, {
+      type: "admin_transfer",
+      actorId: actor._id,
+      counterpartyId: args.newCustodianId,
+      note: args.note,
+    });
+    await recordAudit(ctx, {
+      actorId: actor._id,
+      action: "item.admin_transfer",
+      targetId: item._id,
+      detail: { newCustodianId: args.newCustodianId, note: args.note },
     });
   },
 });

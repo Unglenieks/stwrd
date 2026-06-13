@@ -75,11 +75,40 @@ function SignedInHome() {
           >
             My library
           </Link>
+          <Link
+            to="/branches"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 hover:bg-slate-50"
+          >
+            Branches
+          </Link>
         </div>
+        <AdminLinks />
         <NotificationPref pref={me?.notificationPref} />
       </Card>
       <InviteMember />
     </main>
+  );
+}
+
+function AdminLinks() {
+  const perms = useQuery(api.roles.myPermissions) ?? [];
+  const showClaims = perms.includes(PERMISSIONS.claimsManageAny) || perms.includes(PERMISSIONS.usersManage);
+  const showSettings = perms.includes(PERMISSIONS.instanceSettings);
+  if (!showClaims && !showSettings) return null;
+  return (
+    <div className="mt-3 flex gap-3 text-sm">
+      <span className="text-slate-400">Admin:</span>
+      {showClaims && (
+        <Link to="/admin/claims" className="text-slate-700 underline">
+          Circulation
+        </Link>
+      )}
+      {showSettings && (
+        <Link to="/admin/settings" className="text-slate-700 underline">
+          Settings
+        </Link>
+      )}
+    </div>
   );
 }
 

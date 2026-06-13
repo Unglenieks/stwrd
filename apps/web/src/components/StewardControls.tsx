@@ -50,12 +50,15 @@ function CustodianActions({ item, canPropose }: { item: ItemDetail; canPropose: 
   const withdraw = useMutation(api.items.withdrawListing);
   const repairComplete = useAction(api.items.repairComplete);
   const proposeRetirement = useAction(api.items.proposeRetirement);
+  const createStaging = useMutation(api.claims.createStaging);
+  const branches = useQuery(api.branches.list, {}) ?? [];
   const upload = useUpload();
 
   const [note, setNote] = useState("");
   const [condition, setCondition] = useState(item.conditionRating);
   const [retireReason, setRetireReason] = useState("");
   const [retirePhotos, setRetirePhotos] = useState<File[]>([]);
+  const [branchId, setBranchId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -95,20 +98,6 @@ function CustodianActions({ item, canPropose }: { item: ItemDetail; canPropose: 
                 Post update
               </Button>
             </div>
-            {item.state === "in_custody" && (
-              <div className="w-40">
-                <Button
-                  disabled={busy}
-                  onClick={() =>
-                    run(() =>
-                      markAvailable({ itemId: item._id, exchangeMode: "reveal_contact" }),
-                    )
-                  }
-                >
-                  Mark available
-                </Button>
-              </div>
-            )}
             {item.state === "available" && (
               <div className="w-40">
                 <Button disabled={busy} onClick={() => run(() => withdraw({ itemId: item._id }))}>
@@ -117,6 +106,58 @@ function CustodianActions({ item, canPropose }: { item: ItemDetail; canPropose: 
               </div>
             )}
           </div>
+
+          {/* Listing + branch options (§12). */}
+          {(item.state === "in_custody" || item.state === "available") && (
+            <div className="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-3">
+              {branches.length > 0 && (
+                <select
+                  className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm"
+                  value={branchId}
+                  onChange={(e) => setBranchId(e.target.value)}
+                >
+                  <option value="">a branch…</option>
+                  {branches.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {item.state === "in_custody" && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  className="h-9 rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+                  onClick={() =>
+                    run(() =>
+                      markAvailable(
+                        branchId
+                          ? { itemId: item._id, exchangeMode: "branch", branchId: branchId as Id<"branches"> }
+                          : { itemId: item._id, exchangeMode: "reveal_contact" },
+                      ),
+                    )
+                  }
+                >
+                  {branchId ? "List at branch" : "Mark available"}
+                </button>
+              )}
+              {branchId && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  className="h-9 rounded-md border border-slate-300 px-3 text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+                  onClick={() =>
+                    run(() =>
+                      createStaging({ itemId: item._id, branchId: branchId as Id<"branches"> }),
+                    )
+                  }
+                >
+                  Stage at branch
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 

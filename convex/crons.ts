@@ -17,6 +17,9 @@ crons.interval("claim expiring notifier", { hours: 1 }, internal.claims.notifyEx
 // Email outbox drain — every 1 min (§13, §23.2).
 crons.interval("email outbox drain", { minutes: 1 }, internal.emailDrain.drainOutbox, {});
 
+// IMAP poll (connect → fetch unseen → disconnect) — every 2 min (§13, §23.2).
+crons.interval("imap poll", { minutes: 2 }, internal.imapPoll.pollInbound, {});
+
 // Phase 3: email outbox drain — every 1 min (§13, §23.2).
 // crons.interval("email outbox drain", { minutes: 1 }, internal.email.drainOutbox, {});
 

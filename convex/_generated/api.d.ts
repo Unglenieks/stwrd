@@ -8,14 +8,18 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as authInternal from "../authInternal.js";
+import type * as branches from "../branches.js";
 import type * as categories from "../categories.js";
 import type * as claims from "../claims.js";
 import type * as crons from "../crons.js";
 import type * as email from "../email.js";
 import type * as emailDrain from "../emailDrain.js";
 import type * as http from "../http.js";
+import type * as imapPoll from "../imapPoll.js";
+import type * as inbound from "../inbound.js";
 import type * as items from "../items.js";
 import type * as lib_crypto from "../lib/crypto.js";
 import type * as lib_emailTemplates from "../lib/emailTemplates.js";
@@ -48,14 +52,18 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   auth: typeof auth;
   authInternal: typeof authInternal;
+  branches: typeof branches;
   categories: typeof categories;
   claims: typeof claims;
   crons: typeof crons;
   email: typeof email;
   emailDrain: typeof emailDrain;
   http: typeof http;
+  imapPoll: typeof imapPoll;
+  inbound: typeof inbound;
   items: typeof items;
   "lib/crypto": typeof lib_crypto;
   "lib/emailTemplates": typeof lib_emailTemplates;

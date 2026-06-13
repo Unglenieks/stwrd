@@ -51,24 +51,34 @@ A Caddy reverse proxy terminates TLS and routes a single public hostname.
 
 ## Status
 
-✅ **Phase 1 — Foundation complete.** Compose stack, Convex schema, roles/
-permissions engine, settings, and the full authentication flow (setup wizard,
-invites, password + second-factor elevation with TOTP / email OTP / recovery
-codes) — backend verified against a live Convex backend and the auth surfaces
-(`/setup`, `/login`, `/invite/:token`) verified end-to-end in a browser
-(Playwright). See [`docs/devlog`](./docs/devlog/) for the implementation record.
+Phases 1–4 of 5 are complete. See [`docs/devlog`](./docs/devlog/) for the
+per-phase implementation record (what was built, verification evidence, and any
+deviations from the spec).
 
-✅ **Phase 2 — Circulation core complete** (5 steps): taxonomy · media +
-contribution · catalog & item page · claim & two-party handoff · expiry cron &
-"My library". A member can browse/search, contribute (camera → EXIF-stripped
-upload), claim, complete a photo-verified two-party handoff that moves custody,
-follow the immutable ledger timeline, and manage everything from My library —
-unclaimed claims expire automatically. **End of phase 2 = a usable library.**
+| Phase | Status |
+|---|---|
+| 1 · Foundation — compose stack, schema, roles/permissions, settings, auth (setup wizard, invites, TOTP / email-OTP / recovery 2FA) | ✅ |
+| 2 · Circulation core — contribution (camera → EXIF-stripped upload), catalog + search, claim & two-party photo handoff, ledger timeline, expiry crons, "My library" | ✅ |
+| 3 · Stewardship — repair + retirement workflows, watching, notifications inbox, SMTP outbox (Nodemailer, retry/backoff) | ✅ |
+| 4 · Branches & inbound email — branch drop points + staging, branch handoffs, IMAP poll (reply capture + bounce detection), admin queues (stuck handoffs, recovery) | ✅ |
+| 5 · Polish & ops — audit-feed UI, delivery-log UI, backup/restore + CI restore drill, full §24 Playwright conformance suite, ops docs | ⬜ next |
 
-✅ **Phase 3 — Stewardship complete**: repair + retirement workflows, watching
-(watch a free item → get the starting gun), the notifications inbox (🔔 + unread
-badge), per-account email preference, and a working **SMTP outbox** (templated
-mail drained on a cron via Nodemailer; verified end-to-end against a mailpit
-catcher).
+**What a member can do today:** sign in (policy-driven 2FA), browse/search the
+catalog, contribute items, claim and complete a **two-party photo-verified
+handoff** that moves custody, follow each item's **immutable ledger timeline**,
+log repairs, propose/approve retirement, watch items, drop off / pick up / stage
+at **member-hosted branches**, and manage everything from **My library** — with
+email notifications, automatic claim expiry, and admin queues for stuck handoffs
+and custodian-inactive recovery.
 
-🚧 Next: Phase 4 — Branches & inbound email (branch drop points, IMAP poll, admin queues).
+### Verification
+
+The app is exercised by **47 Convex unit tests** (convex-test, in-process) and
+**11 Playwright end-to-end tests** that drive the real UI against the live
+self-hosted backend — including a two-account driveway handoff, real SMTP
+delivery to a mailpit catcher, and the branch flow. Run them with:
+
+```bash
+pnpm test:convex                 # backend unit tests
+cd apps/web && pnpm exec playwright test   # e2e (needs the local stack + mailpit)
+```
