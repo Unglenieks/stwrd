@@ -183,6 +183,8 @@ export default defineSchema({
     giverConfirmedAt: v.optional(v.number()),
     receiverConfirmedAt: v.optional(v.number()),
     expiresAt: v.number(),
+    // Set when the once-per-claim "expiring in ≤24h" warning has been sent (§23.1).
+    expiringNotifiedAt: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_item", ["itemId"])

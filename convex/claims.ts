@@ -7,7 +7,7 @@
 // (C-08). confirmReceiver is an action (photo verification needs blob I/O, §18.1)
 // delegating to an internal mutation for the atomic finalize.
 import { v } from "convex/values";
-import { AppError, PERMISSIONS } from "@lot/shared";
+import { AppError, CLAIM_EXPIRING_WARN_HOURS, PERMISSIONS } from "@lot/shared";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
@@ -213,6 +213,78 @@ export const cancel = mutation({
       itemTitle: item.title,
       reason,
     });
+  },
+});
+
+// ── Expiry sweep & expiring notifier (cron-driven, §9.3, §23.2) ──────────────
+
+/**
+ * Auto-expire claims past `expiresAt` that NO party has confirmed (C-09). A claim
+ * with either confirmation is SKIPPED (§9.3) — a half-done branch drop shouldn't
+ * auto-revert; it surfaces in the admin stuck-handoffs queue (Phase 4) instead
+ * (C-10). Runs every 15 min.
+ */
+export const sweepExpired = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const due = await ctx.db
+      .query("claims")
+      .withIndex("by_expiresAt", (q) => q.lt("expiresAt", now))
+      .collect();
+    for (const claim of due) {
+      if (claim.state !== "pending") continue;
+      if (claim.giverConfirmedAt || claim.receiverConfirmedAt) continue; // skip half-done (C-10)
+      const item = await ctx.db.get(claim.itemId);
+      if (!item) continue;
+      await ctx.db.patch(claim._id, { state: "cancelled" });
+      if (item.state === "claimed") await ctx.db.patch(item._id, { state: "available" });
+      // No human actor on auto-expiry; attribute to the holder (whose item
+      // reverts), with reason `expired` making the automated origin unambiguous.
+      await appendLedger(ctx, (await ctx.db.get(item._id))!, {
+        type: "claim_cancelled",
+        actorId: item.custodianId,
+        claimId: claim._id,
+        reason: "expired",
+      });
+      for (const uid of [claim.claimantId, item.custodianId]) {
+        await notify(ctx, uid, "claim_cancelled", {
+          claimId: claim._id,
+          itemId: item._id,
+          itemTitle: item.title,
+          reason: "expired",
+        });
+      }
+    }
+  },
+});
+
+/** Send the once-per-claim "expiring in ≤24h" warning (C-09). Runs hourly. */
+export const notifyExpiring = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const horizon = now + CLAIM_EXPIRING_WARN_HOURS * 60 * 60 * 1000;
+    const soon = await ctx.db
+      .query("claims")
+      .withIndex("by_expiresAt", (q) => q.lt("expiresAt", horizon))
+      .collect();
+    for (const claim of soon) {
+      if (claim.state !== "pending") continue;
+      if (claim.giverConfirmedAt || claim.receiverConfirmedAt) continue;
+      if (claim.expiresAt <= now) continue; // already expired → the sweep handles it
+      if (claim.expiringNotifiedAt) continue; // once per claim
+      const item = await ctx.db.get(claim.itemId);
+      if (!item) continue;
+      const hoursLeft = Math.max(1, Math.ceil((claim.expiresAt - now) / (60 * 60 * 1000)));
+      await notify(ctx, claim.claimantId, "claim_expiring", {
+        claimId: claim._id,
+        itemId: item._id,
+        itemTitle: item.title,
+        hoursLeft,
+      });
+      await ctx.db.patch(claim._id, { expiringNotifiedAt: now });
+    }
   },
 });
 

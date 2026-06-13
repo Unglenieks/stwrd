@@ -55,6 +55,12 @@ function SignedInHome() {
           >
             Contribute an item
           </Link>
+          <Link
+            to="/me"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 hover:bg-slate-50"
+          >
+            My library
+          </Link>
         </div>
       </Card>
       <InviteMember />

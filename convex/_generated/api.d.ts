@@ -26,6 +26,7 @@ import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_search from "../lib/search.js";
 import type * as lib_tokens from "../lib/tokens.js";
 import type * as lib_totp from "../lib/totp.js";
+import type * as me from "../me.js";
 import type * as roles from "../roles.js";
 import type * as settings from "../settings.js";
 import type * as setup from "../setup.js";
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   "lib/search": typeof lib_search;
   "lib/tokens": typeof lib_tokens;
   "lib/totp": typeof lib_totp;
+  me: typeof me;
   roles: typeof roles;
   settings: typeof settings;
   setup: typeof setup;

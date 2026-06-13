@@ -58,6 +58,11 @@ codes) — backend verified against a live Convex backend and the auth surfaces
 (`/setup`, `/login`, `/invite/:token`) verified end-to-end in a browser
 (Playwright). See [`docs/devlog`](./docs/devlog/) for the implementation record.
 
-🚧 **Phase 2 — Circulation core** in progress (5 steps): ✅ 1. Taxonomy ·
-✅ 2. Media + contribution · ✅ 3. Catalog & item page · ✅ 4. Claim & handoff ·
-5. Expiry cron & polish. End of phase 2 = a usable library.
+✅ **Phase 2 — Circulation core complete** (5 steps): taxonomy · media +
+contribution · catalog & item page · claim & two-party handoff · expiry cron &
+"My library". A member can browse/search, contribute (camera → EXIF-stripped
+upload), claim, complete a photo-verified two-party handoff that moves custody,
+follow the immutable ledger timeline, and manage everything from My library —
+unclaimed claims expire automatically. **End of phase 2 = a usable library.**
+
+🚧 Next: Phase 3 — Stewardship (repair, retirement, watching, notifications + SMTP).
