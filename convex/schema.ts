@@ -191,7 +191,11 @@ export default defineSchema({
     .index("by_claimant", ["claimantId"])
     .index("by_state", ["state"])
     .index("by_item_state", ["itemId", "state"])
-    .index("by_expiresAt", ["expiresAt"]),
+    .index("by_expiresAt", ["expiresAt"])
+    // Bounds the expiry sweeps to PENDING claims only (terminal claims keep an
+    // expiresAt in the past forever, so a plain expiresAt scan would grow
+    // unbounded over time). §9.3, §23.2.
+    .index("by_state_expiresAt", ["state", "expiresAt"]),
 
   // §7.6 — branches.
   branches: defineTable({

@@ -230,10 +230,9 @@ export const sweepExpired = internalMutation({
     const now = Date.now();
     const due = await ctx.db
       .query("claims")
-      .withIndex("by_expiresAt", (q) => q.lt("expiresAt", now))
+      .withIndex("by_state_expiresAt", (q) => q.eq("state", "pending").lt("expiresAt", now))
       .collect();
     for (const claim of due) {
-      if (claim.state !== "pending") continue;
       if (claim.giverConfirmedAt || claim.receiverConfirmedAt) continue; // skip half-done (C-10)
       const item = await ctx.db.get(claim.itemId);
       if (!item) continue;
@@ -267,10 +266,11 @@ export const notifyExpiring = internalMutation({
     const horizon = now + CLAIM_EXPIRING_WARN_HOURS * 60 * 60 * 1000;
     const soon = await ctx.db
       .query("claims")
-      .withIndex("by_expiresAt", (q) => q.lt("expiresAt", horizon))
+      .withIndex("by_state_expiresAt", (q) =>
+        q.eq("state", "pending").lt("expiresAt", horizon),
+      )
       .collect();
     for (const claim of soon) {
-      if (claim.state !== "pending") continue;
       if (claim.giverConfirmedAt || claim.receiverConfirmedAt) continue;
       if (claim.expiresAt <= now) continue; // already expired → the sweep handles it
       if (claim.expiringNotifiedAt) continue; // once per claim
