@@ -1,7 +1,6 @@
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
 import { PERMISSIONS } from "@stwrd/shared";
 import { Button, Card, Input, Label } from "~/components/ui";
@@ -27,62 +26,17 @@ function Home() {
 
 function SignedInHome() {
   const me = useQuery(api.users.me);
-  const { signOut } = useAuthActions();
   const settings = useQuery(api.settings.get);
-  const unread = useQuery(api.notifications.unreadCount) ?? 0;
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6">
         <h1 className="text-2xl font-semibold">{settings?.orgName ?? "Stwrd"}</h1>
-        <div className="flex items-center gap-3">
-          <Link
-            to="/notifications"
-            className="relative inline-flex h-10 items-center rounded-md border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            🔔
-            {unread > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs text-white">
-                {unread}
-              </span>
-            )}
-          </Link>
-          <div className="w-28">
-            <Button onClick={() => void signOut()}>Sign out</Button>
-          </div>
-        </div>
+        <p className="mt-1 text-slate-500">
+          Welcome back, <span className="font-medium text-slate-700">{me?.name ?? me?.email ?? "…"}</span>
+        </p>
       </div>
       <Card>
-        <p className="text-slate-700">
-          Signed in as <span className="font-medium">{me?.name ?? me?.email}</span>.
-        </p>
-        <div className="mt-4 flex gap-3">
-          <Link
-            to="/items"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
-          >
-            Browse catalog
-          </Link>
-          <Link
-            to="/contribute"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 hover:bg-slate-50"
-          >
-            Contribute an item
-          </Link>
-          <Link
-            to="/me"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 hover:bg-slate-50"
-          >
-            My library
-          </Link>
-          <Link
-            to="/branches"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 hover:bg-slate-50"
-          >
-            Branches
-          </Link>
-        </div>
-        <AdminLinks />
         <NotificationPref pref={me?.notificationPref} />
       </Card>
       <InviteMember />
@@ -90,33 +44,6 @@ function SignedInHome() {
   );
 }
 
-function AdminLinks() {
-  const perms = useQuery(api.roles.myPermissions) ?? [];
-  const showClaims = perms.includes(PERMISSIONS.claimsManageAny) || perms.includes(PERMISSIONS.usersManage);
-  const showSettings = perms.includes(PERMISSIONS.instanceSettings);
-  const showAudit = perms.includes(PERMISSIONS.instanceAuditView);
-  if (!showClaims && !showSettings && !showAudit) return null;
-  return (
-    <div className="mt-3 flex gap-3 text-sm">
-      <span className="text-slate-400">Admin:</span>
-      {showClaims && (
-        <Link to="/admin/claims" className="text-slate-700 underline">
-          Circulation
-        </Link>
-      )}
-      {showAudit && (
-        <Link to="/admin/audit" className="text-slate-700 underline">
-          Audit &amp; email
-        </Link>
-      )}
-      {showSettings && (
-        <Link to="/admin/settings" className="text-slate-700 underline">
-          Settings
-        </Link>
-      )}
-    </div>
-  );
-}
 
 function NotificationPref({ pref }: { pref?: "in_app" | "email" }) {
   const update = useMutation(api.users.updateProfile);

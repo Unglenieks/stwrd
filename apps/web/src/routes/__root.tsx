@@ -1,5 +1,6 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { ConvexClientProvider } from "~/lib/ConvexClientProvider";
+import { AppNav } from "~/components/AppNav";
 import appCss from "~/styles/globals.css?url";
 
 export const Route = createRootRoute({
@@ -22,6 +23,7 @@ function RootComponent() {
       </head>
       <body>
         <ConvexClientProvider>
+          <AppNav />
           <Outlet />
         </ConvexClientProvider>
         <Scripts />
