@@ -1,4 +1,4 @@
-import { useConvexAuth, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
@@ -53,7 +53,31 @@ function ItemGrid({ items }: { items: ItemCard[] | undefined }) {
   );
 }
 
+function NotificationPref({ pref }: { pref?: "in_app" | "email" }) {
+  const update = useMutation(api.users.updateProfile);
+  if (!pref) return null;
+  return (
+    <Card className="mb-8 flex items-center justify-between gap-4 py-4">
+      <div>
+        <p className="text-sm font-medium text-slate-800">Email notifications</p>
+        <p className="text-xs text-slate-500">Receive item and claim updates by email in addition to in-app notifications.</p>
+      </div>
+      <button
+        role="switch"
+        aria-checked={pref === "email"}
+        onClick={() => void update({ notificationPref: pref === "email" ? "in_app" : "email" })}
+        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${pref === "email" ? "bg-slate-900" : "bg-slate-200"}`}
+      >
+        <span
+          className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform ${pref === "email" ? "translate-x-5" : "translate-x-0"}`}
+        />
+      </button>
+    </Card>
+  );
+}
+
 function MyLibrary() {
+  const me = useQuery(api.users.me);
   const custody = useQuery(api.me.custody, {});
   const claims = useQuery(api.me.claims, {});
   const contributions = useQuery(api.me.contributions, {});
@@ -61,6 +85,7 @@ function MyLibrary() {
   return (
     <main className="mx-auto max-w-5xl p-6">
       <h1 className="mb-6 text-2xl font-semibold">My library</h1>
+      <NotificationPref pref={me?.notificationPref} />
 
       <section className="mb-8">
         <h2 className="mb-3 text-lg font-semibold">My active claims</h2>
