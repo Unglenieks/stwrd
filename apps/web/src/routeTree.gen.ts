@@ -21,6 +21,7 @@ import { Route as ItemsIdRouteImport } from './routes/items.$id'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as BranchesIdRouteImport } from './routes/branches.$id'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminMembersRouteImport } from './routes/admin.members'
 import { Route as AdminClaimsRouteImport } from './routes/admin.claims'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 
@@ -84,6 +85,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMembersRoute = AdminMembersRouteImport.update({
+  id: '/admin/members',
+  path: '/admin/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminClaimsRoute = AdminClaimsRouteImport.update({
   id: '/admin/claims',
   path: '/admin/claims',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/claims': typeof AdminClaimsRoute
+  '/admin/members': typeof AdminMembersRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/branches/$id': typeof BranchesIdRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/claims': typeof AdminClaimsRoute
+  '/admin/members': typeof AdminMembersRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/branches/$id': typeof BranchesIdRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/claims': typeof AdminClaimsRoute
+  '/admin/members': typeof AdminMembersRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/branches/$id': typeof BranchesIdRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/admin/audit'
     | '/admin/claims'
+    | '/admin/members'
     | '/admin/settings'
     | '/branches/$id'
     | '/invite/$token'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/admin/audit'
     | '/admin/claims'
+    | '/admin/members'
     | '/admin/settings'
     | '/branches/$id'
     | '/invite/$token'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/admin/audit'
     | '/admin/claims'
+    | '/admin/members'
     | '/admin/settings'
     | '/branches/$id'
     | '/invite/$token'
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   SetupRoute: typeof SetupRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminClaimsRoute: typeof AdminClaimsRoute
+  AdminMembersRoute: typeof AdminMembersRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   BranchesIdRoute: typeof BranchesIdRoute
   InviteTokenRoute: typeof InviteTokenRoute
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/members': {
+      id: '/admin/members'
+      path: '/admin/members'
+      fullPath: '/admin/members'
+      preLoaderRoute: typeof AdminMembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/claims': {
       id: '/admin/claims'
       path: '/admin/claims'
@@ -322,6 +342,7 @@ const rootRouteChildren: RootRouteChildren = {
   SetupRoute: SetupRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminClaimsRoute: AdminClaimsRoute,
+  AdminMembersRoute: AdminMembersRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   BranchesIdRoute: BranchesIdRoute,
   InviteTokenRoute: InviteTokenRoute,

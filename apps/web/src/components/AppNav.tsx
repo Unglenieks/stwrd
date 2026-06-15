@@ -35,9 +35,11 @@ function NavBar({
 
   const showClaims =
     perms.includes(PERMISSIONS.claimsManageAny) || perms.includes(PERMISSIONS.usersManage);
+  const showMembers =
+    perms.includes(PERMISSIONS.usersCreate) || perms.includes(PERMISSIONS.usersManage);
   const showAudit = perms.includes(PERMISSIONS.instanceAuditView);
   const showSettings = perms.includes(PERMISSIONS.instanceSettings);
-  const hasAdmin = showClaims || showAudit || showSettings;
+  const hasAdmin = showClaims || showMembers || showAudit || showSettings;
 
   const orgName = settings?.orgName ?? "Stwrd";
 
@@ -61,6 +63,7 @@ function NavBar({
           {hasAdmin && (
             <AdminMenu
               showClaims={showClaims}
+              showMembers={showMembers}
               showAudit={showAudit}
               showSettings={showSettings}
             />
@@ -118,6 +121,11 @@ function NavBar({
                 <div className="mt-2 border-t border-slate-100 pt-2 text-xs font-medium uppercase tracking-wide text-slate-400">
                   Admin
                 </div>
+                {showMembers && (
+                  <MobileNavLink to="/admin/members" onClick={() => setMenuOpen(false)}>
+                    Members
+                  </MobileNavLink>
+                )}
                 {showClaims && (
                   <MobileNavLink to="/admin/claims" onClick={() => setMenuOpen(false)}>
                     Circulation
@@ -198,10 +206,12 @@ function MobileNavLink({
 
 function AdminMenu({
   showClaims,
+  showMembers,
   showAudit,
   showSettings,
 }: {
   showClaims: boolean;
+  showMembers: boolean;
   showAudit: boolean;
   showSettings: boolean;
 }) {
@@ -228,6 +238,15 @@ function AdminMenu({
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-1 w-44 rounded-lg border border-slate-200 bg-white py-1 shadow-md">
+          {showMembers && (
+            <Link
+              to="/admin/members"
+              onClick={() => setOpen(false)}
+              className="flex h-9 items-center px-3 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              Members
+            </Link>
+          )}
           {showClaims && (
             <Link
               to="/admin/claims"

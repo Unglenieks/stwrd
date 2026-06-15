@@ -20,6 +20,7 @@ import {
   currentUserId,
   getEffectivePermissions,
   requirePermission,
+  requireUser,
 } from "./lib/permissions";
 
 /** List all roles (with member counts) for the role builder (§15). */
@@ -254,6 +255,20 @@ export async function seedDefaultRoles(
 
   return { serverManagerRoleId, memberRoleId };
 }
+
+/** Role id+name pairs for the members panel (§15). Requires usersCreate or usersManage. */
+export const listNames = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await requireUser(ctx);
+    const perms = await getEffectivePermissions(ctx, me._id);
+    if (!perms.has(PERMISSIONS.usersCreate) && !perms.has(PERMISSIONS.usersManage)) {
+      throw new AppError("forbidden");
+    }
+    const roles = await ctx.db.query("roles").collect();
+    return roles.map((r) => ({ _id: r._id, name: r.name }));
+  },
+});
 
 /** The effective permissions of the current user, for UI affordance gating (§5.1). */
 export const myPermissions = query({
