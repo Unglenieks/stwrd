@@ -1,10 +1,10 @@
 # Hostname, TLS & domain-change runbook (spec §19.5)
 
-The public hostname is a **single source of truth** in `deploy/.env`. There is no
-second, independently editable base-URL field that could drift — every absolute
-URL in outbound email (invite links, item links) derives from `PUBLIC_SITE_ORIGIN`,
-and the admin Settings page shows it **read-only** so you can verify what the
-instance believes about itself.
+The public hostname is a **single source of truth** in `deploy/.env` for a Stwrd
+instance. There is no second, independently editable base-URL field that could
+drift — every absolute URL in outbound email (invite links, item links) derives
+from `PUBLIC_SITE_ORIGIN`, and the admin Settings page shows it **read-only** so
+you can verify what the instance believes about itself.
 
 ## The origin variables
 

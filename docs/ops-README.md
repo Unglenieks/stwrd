@@ -1,8 +1,7 @@
 # Operations guide
 
-How a server manager runs a Distributed Library of Things instance. One technical
-volunteer should be able to operate it. See [`spec.md`](../spec.md) §19 for the
-normative deployment contract.
+How a server manager runs a Stwrd instance. One technical volunteer should be able to
+operate it. See [`spec.md`](../spec.md) §19 for the normative deployment contract.
 
 ## Stack
 

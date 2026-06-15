@@ -1,6 +1,6 @@
 # §24 conformance map
 
-The spec's acceptance suite (`spec.md` §24, scenarios **C-01…C-21**) mapped 1:1 to
+Stwrd's acceptance suite (`spec.md` §24, scenarios **C-01…C-21**) mapped 1:1 to
 the tests that encode them. Backend invariants are covered by **convex-test**
 (in-process, deterministic, no backend needed); UI-observable flows by
 **Playwright** end-to-end tests driving the real app against the live stack. Test

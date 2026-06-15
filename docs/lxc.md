@@ -1,8 +1,8 @@
 # LXC hosting guide (spec §3.3)
 
-Docker Compose is the canonical reference deployment. LXC is fully supported — the
-spec requires only that the three services run with the same **environment
-contract** (§19.3). There are two mechanical paths.
+Docker Compose is the canonical reference deployment for Stwrd. LXC is fully
+supported — the spec requires only that the three services run with the same
+**environment contract** (§19.3). There are two mechanical paths.
 
 ## Option A — Docker nested inside an LXC container (Proxmox-style, common)
 
