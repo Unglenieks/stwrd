@@ -37,7 +37,8 @@ HTTP-actions origin for the custom `/auth/*` calls.
   Navigation is driven reactively off `isAuthenticated` (see gotcha below).
 - `/invite/$token` — sets a password → `/auth/invite/accept` → session.
 - `/` — redirects to `/setup` (fresh instance) or `/login` (signed out); shows a
-  minimal signed-in home with sign-out otherwise.
+  landing home page once authenticated (later improved to a full hero + available
+  items grid in 0011).
 - `lib/authApi.ts` — typed client for the `/auth/*` HTTP actions, mapping the
   closed error codes (§22.5) to copy.
 

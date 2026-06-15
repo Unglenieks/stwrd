@@ -44,8 +44,9 @@
 ## Frontend
 - Item page: **Watch** toggle; **holder controls** (status update, mark-available
   / withdraw, repair completion, retirement proposal); **approver card**.
-- `/notifications` inbox + a 🔔 bell with unread badge on the home; per-account
-  "also email me" preference toggle.
+- `/notifications` inbox + a 🔔 bell with unread badge on the nav; per-account
+  "also email me" preference toggle (initially on the home screen; moved to `/me`
+  as a toggle switch in 0011).
 - `/admin/settings`: SMTP config form + "send test email" + "remove email config".
 
 ## Verification

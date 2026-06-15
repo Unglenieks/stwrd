@@ -17,6 +17,7 @@ what was built, why, how it was verified, and any deviations from `spec.md`.
 | 0008 | [Phase 3: Stewardship](0008-phase3-stewardship.md) | 3 | ✅ Done |
 | 0009 | [Phase 4: Branches & inbound email](0009-phase4-branches-inbound.md) | 4 | ✅ Done |
 | 0010 | [Phase 5: Polish & ops](0010-phase5-polish-ops.md) | 5 | ✅ Done |
+| 0011 | [Home page redesign](0011-home-page-redesign.md) | post-5 | ✅ Done |
 
 ## Conventions
 

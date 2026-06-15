@@ -42,9 +42,10 @@ photo. Verified with a real two-account browser test.
 - **Item page** — real "Claim to borrow / to repair" buttons (instant, with the
   "just missed it" toast on a lost race); the checklist replaces them once the
   viewer is a party.
-- **Invite a member** — a small home-screen form for `users.create` holders
-  (the `users.invite` backend has existed since Phase 1 with no UI). This also
-  enabled the two-account e2e.
+- **Invite a member** — a form for `users.create` holders wired to `users.invite`
+  (the backend has existed since Phase 1 with no UI). Initially added to the home
+  screen; relocated to `/admin/members` in 0011 where it lives beside the members
+  table. This also enabled the two-account e2e.
 
 ## Verification
 
