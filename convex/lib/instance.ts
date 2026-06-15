@@ -2,7 +2,7 @@
 import {
   CLAIM_EXPIRY_HOURS_DEFAULT,
   PHOTO_MAX_EDGE_PX_DEFAULT,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 

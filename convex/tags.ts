@@ -8,7 +8,7 @@ import {
   PERMISSIONS,
   TAGS_MAX_PER_ITEM,
   zTag,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { v } from "convex/values";
 import type { MutationCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";

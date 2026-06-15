@@ -13,7 +13,7 @@ import {
   CLAIM_EXPIRY_HOURS_MIN,
   PASSWORD_MIN_LENGTH,
   PHOTO_MAX_EDGE_PX_DEFAULT,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { action, internalMutation } from "./_generated/server";

@@ -3,7 +3,7 @@
 // Downscale to photoMaxEdgePx and re-encode to WebP before upload. Re-encoding
 // through a canvas STRIPS all EXIF/GPS metadata (the server then verifies, §18.1)
 // and the quality search keeps each photo around the target size.
-import { PHOTO_MAX_EDGE_PX_DEFAULT, PHOTO_TARGET_BYTES } from "@lot/shared";
+import { PHOTO_MAX_EDGE_PX_DEFAULT, PHOTO_TARGET_BYTES } from "@stwrd/shared";
 
 async function loadImage(file: File): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file);

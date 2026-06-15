@@ -2,7 +2,7 @@
 // handoffs in time so two schedules never have to align. "Public access" is
 // PHYSICAL only; the digital catalog stays members-only (§1.2).
 import { v } from "convex/values";
-import { AppError, PERMISSIONS } from "@lot/shared";
+import { AppError, PERMISSIONS } from "@stwrd/shared";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { getSettings, recordAudit } from "./lib/instance";

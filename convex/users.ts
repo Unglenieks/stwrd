@@ -5,7 +5,7 @@ import {
   AppError,
   INVITE_TOKEN_TTL_MS,
   PERMISSIONS,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import {

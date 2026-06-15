@@ -6,7 +6,7 @@ import {
   AppError,
   EMAIL_OTP_LOCKOUT_MS,
   EMAIL_OTP_MAX_ATTEMPTS,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import type { Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery } from "./_generated/server";
 import { enqueueEmail } from "./email";

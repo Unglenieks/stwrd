@@ -8,7 +8,7 @@ import {
   EXCHANGE_MODES,
   PHOTOS_MAX_PER_ENTRY,
   TITLE_MAX,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { Button, Card, FieldError, Input, Label, Textarea } from "~/components/ui";
 import { processImage, uploadToConvex } from "~/lib/imageUpload";
 

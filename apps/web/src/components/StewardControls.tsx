@@ -6,7 +6,7 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { api } from "@cvx/api";
 import type { Id } from "@cvx/dataModel";
-import { CONDITION_RUBRIC, PERMISSIONS } from "@lot/shared";
+import { CONDITION_RUBRIC, PERMISSIONS } from "@stwrd/shared";
 import { Button, Card, FieldError, Textarea } from "~/components/ui";
 import { processImage, uploadToConvex } from "~/lib/imageUpload";
 

@@ -1,4 +1,4 @@
-# Distributed Library of Things — operator Makefile (spec §19.2).
+# Stwrd — operator Makefile (spec §19.2).
 # Run from the deploy/ directory. Wraps the first-run and day-2 procedures.
 
 COMPOSE ?= docker compose

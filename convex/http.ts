@@ -16,7 +16,7 @@ import {
   MFA_PENDING_TOKEN_TTL_MS,
   PASSWORD_MIN_LENGTH,
   type ErrorCode,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { httpAction } from "./_generated/server";

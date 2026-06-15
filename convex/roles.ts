@@ -11,7 +11,7 @@ import {
   isPermission,
   MEMBER_PERMISSIONS,
   PERMISSIONS,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import { recordAudit } from "./lib/instance";

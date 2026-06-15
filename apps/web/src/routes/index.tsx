@@ -3,7 +3,7 @@ import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
-import { PERMISSIONS } from "@lot/shared";
+import { PERMISSIONS } from "@stwrd/shared";
 import { Button, Card, Input, Label } from "~/components/ui";
 
 export const Route = createFileRoute("/")({
@@ -34,7 +34,7 @@ function SignedInHome() {
   return (
     <main className="mx-auto max-w-2xl p-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{settings?.orgName ?? "Library of Things"}</h1>
+        <h1 className="text-2xl font-semibold">{settings?.orgName ?? "Stwrd"}</h1>
         <div className="flex items-center gap-3">
           <Link
             to="/notifications"

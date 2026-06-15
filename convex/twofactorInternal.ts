@@ -9,7 +9,7 @@ export const orgAndEmail = internalQuery({
     const settings = await ctx.db.query("instanceSettings").first();
     const user = await ctx.db.get(userId);
     return {
-      orgName: settings?.orgName ?? "Library of Things",
+      orgName: settings?.orgName ?? "Stwrd",
       email: user?.email ?? "member",
     };
   },

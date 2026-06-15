@@ -11,7 +11,7 @@
 // PBKDF2 (see lib/passwordCrypto.ts — DEVIATION from Argon2id, documented there).
 import { ConvexCredentials } from "@convex-dev/auth/providers/ConvexCredentials";
 import { convexAuth } from "@convex-dev/auth/server";
-import { AppError } from "@lot/shared";
+import { AppError } from "@stwrd/shared";
 import { internal } from "./_generated/api";
 import type { DataModel, Id } from "./_generated/dataModel";
 import { hashSecret, verifySecret } from "./lib/passwordCrypto";

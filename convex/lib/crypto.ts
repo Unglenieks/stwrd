@@ -2,7 +2,7 @@
 // §18.1). AES-256-GCM via Web Crypto, which runs in the Convex isolate. The key
 // derives from APP_SECRETS_KEY, a Convex deployment env var (§19.1) — never the
 // frontend.
-import { AppError } from "@lot/shared";
+import { AppError } from "@stwrd/shared";
 
 export interface EncryptedSecret {
   ciphertext: string; // base64

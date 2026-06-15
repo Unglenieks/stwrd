@@ -1,4 +1,4 @@
-# Distributed Library of Things — Technical Specification
+# Stwrd — Technical Specification
 
 **Version:** 3.0 · **Date:** 2026-06-11 · **Status:** Agent-executable (normative). Review logs: Appendix A (v1→v2), Appendix B (v2→v3)
 
@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-A self-hostable web application that lets a community organization run a "library of things" with no central physical collection. Items live with members. Custody — not shelving — is the organizing principle: every item is in the care of exactly one member at all times, and an append-only ledger records every change of hands, repair, and condition observation across the item's life.
+A self-hostable web application (Stwrd) that lets a community organization share tools, equipment, and other things with no central physical collection. Items live with members. Custody — not shelving — is the organizing principle: every item is in the care of exactly one member at all times, and an append-only ledger records every change of hands, repair, and condition observation across the item's life.
 
 Each community org runs its own isolated instance (one org per install). The instance starts empty; the catalog grows as members contribute items they're willing to share. When a holder marks an item "returned," nothing physically moves — the holder becomes the item's de facto librarian until another member claims it and the two of them complete a confirmed handoff.
 
@@ -369,7 +369,7 @@ The server manager connects the instance to an **org-owned mailbox** in Settings
 **Outbound (SMTP)** — required for normal operation:
 - 2FA OTP codes and invite links (transactional; always sent regardless of preference).
 - Notification emails (claim placed on your item, handoff confirmed, claim expiring in 24 h, claim cancelled, retirement decision, branch activity on your hosted branch) — sent only for users whose `notificationPref = "email"`; everyone always gets the in-app version.
-- Outbox pattern: mutation inserts into `emailOutbox`; a cron-driven action drains the queue with retry/backoff (3 attempts), recording failures for the admin delivery log. Each message sets a `Message-ID` and a reply-to tagged address when supported (`library+claim-<id>@org.example`), else a `[LOT#<id>]` subject token.
+- Outbox pattern: mutation inserts into `emailOutbox`; a cron-driven action drains the queue with retry/backoff (3 attempts), recording failures for the admin delivery log. Each message sets a `Message-ID` and a reply-to tagged address when supported (`library+claim-<id>@org.example`), else a `[STWRD#<id>]` subject token.
 
 **Inbound (IMAP)** — confirmed scope: a scheduled action polls the mailbox (connect → fetch unseen → disconnect, default every 2 min) and:
 1. **Bounce/DSN detection** — failed deliveries mark the outbox row `failed` and surface a "member email may be broken" admin alert.
@@ -670,16 +670,16 @@ Every mutation failure maps to exactly one code; user-facing message strings liv
 |---|---|---|
 | `invite` | You're invited to {org} | name, inviteUrl, expiresAt |
 | `otp` | {code} is your {org} sign-in code | code |
-| `claim_placed` | [LOT#{claimId}] {itemTitle}: claimed by {claimantName} | itemUrl, exchangeMode, contact? |
-| `claim_cancelled` | [LOT#{claimId}] {itemTitle}: claim cancelled ({reason}) | itemUrl |
-| `claim_expiring` | [LOT#{claimId}] {itemTitle}: claim expires in {hoursLeft} h | claimUrl |
-| `handoff_completed` | [LOT#{claimId}] {itemTitle}: handoff confirmed | itemUrl |
+| `claim_placed` | [STWRD#{claimId}] {itemTitle}: claimed by {claimantName} | itemUrl, exchangeMode, contact? |
+| `claim_cancelled` | [STWRD#{claimId}] {itemTitle}: claim cancelled ({reason}) | itemUrl |
+| `claim_expiring` | [STWRD#{claimId}] {itemTitle}: claim expires in {hoursLeft} h | claimUrl |
+| `handoff_completed` | [STWRD#{claimId}] {itemTitle}: handoff confirmed | itemUrl |
 | `watched_item_available` | {itemTitle} is available | itemUrl |
 | `retirement_decision` | {itemTitle}: retirement {approved\|denied} | itemUrl, note |
 | `branch_item_placed` | {itemTitle} placed at {branchName} | branchUrl |
 | `security_alert` | {org} account security notice | event |
 
-The `[LOT#{claimId}]` token (and `Reply-To` plus-address where supported) is the inbound-matching key (§13).
+The `[STWRD#{claimId}]` token (and `Reply-To` plus-address where supported) is the inbound-matching key (§13).
 
 ### 23.5 Notification payloads (per kind)
 

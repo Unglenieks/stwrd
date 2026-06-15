@@ -2,7 +2,7 @@ import { useConvexAuth, usePaginatedQuery, useQuery } from "convex/react";
 import { useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
-import { PAGE_SIZE_ADMIN, PERMISSIONS } from "@lot/shared";
+import { PAGE_SIZE_ADMIN, PERMISSIONS } from "@stwrd/shared";
 import { Card } from "~/components/ui";
 
 export const Route = createFileRoute("/admin/audit")({

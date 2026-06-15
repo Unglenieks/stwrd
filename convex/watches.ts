@@ -3,7 +3,7 @@
 // confers ZERO priority — first confirmed claim still wins (§1.2). Watching your
 // own item is allowed (§22.4); the notification is suppressed for the actor.
 import { v } from "convex/values";
-import { AppError } from "@lot/shared";
+import { AppError } from "@stwrd/shared";
 import { mutation } from "./_generated/server";
 import { requireUser } from "./lib/permissions";
 

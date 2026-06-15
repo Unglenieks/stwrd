@@ -2,7 +2,7 @@ import { useConvexAuth, useMutation, usePaginatedQuery } from "convex/react";
 import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
-import { PAGE_SIZE_ADMIN } from "@lot/shared";
+import { PAGE_SIZE_ADMIN } from "@stwrd/shared";
 import { Button, Card } from "~/components/ui";
 
 export const Route = createFileRoute("/notifications/")({

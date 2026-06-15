@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
 import type { Id } from "@cvx/dataModel";
-import { PAGE_SIZE_CATALOG } from "@lot/shared";
+import { PAGE_SIZE_CATALOG } from "@stwrd/shared";
 import { Button, Card, Input } from "~/components/ui";
 import { StateBadge } from "~/components/StateBadge";
 

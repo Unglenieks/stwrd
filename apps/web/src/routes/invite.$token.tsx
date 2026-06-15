@@ -2,7 +2,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { PASSWORD_MIN_LENGTH } from "@lot/shared";
+import { PASSWORD_MIN_LENGTH } from "@stwrd/shared";
 import { Button, Card, FieldError, Input, Label } from "~/components/ui";
 import { authApi, AuthError } from "~/lib/authApi";
 import { useSiteUrl } from "~/lib/ConvexClientProvider";

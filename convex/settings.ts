@@ -5,7 +5,7 @@ import {
   CLAIM_EXPIRY_HOURS_MAX,
   CLAIM_EXPIRY_HOURS_MIN,
   PERMISSIONS,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { internalQuery, mutation, query } from "./_generated/server";
 import { encryptSecret } from "./lib/crypto";
 import { getSettings, isSetupComplete, recordAudit } from "./lib/instance";

@@ -1,7 +1,7 @@
 // RFC 6238 TOTP via Web Crypto (isolate-safe) — spec §6.2.
 // ±1 time-step tolerance (TOTP_STEP_TOLERANCE), 30-second period, 6 digits,
 // HMAC-SHA-1 (the otpauth default that authenticator apps expect).
-import { TOTP_STEP_TOLERANCE } from "@lot/shared";
+import { TOTP_STEP_TOLERANCE } from "@stwrd/shared";
 
 const PERIOD_SECONDS = 30;
 const DIGITS = 6;

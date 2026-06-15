@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
 import type { Id } from "@cvx/dataModel";
-import { PERMISSIONS } from "@lot/shared";
+import { PERMISSIONS } from "@stwrd/shared";
 import { Button, Card } from "~/components/ui";
 
 export const Route = createFileRoute("/admin/claims")({

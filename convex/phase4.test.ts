@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
-import { MEMBER_PERMISSIONS, PERMISSIONS } from "@lot/shared";
+import { MEMBER_PERMISSIONS, PERMISSIONS } from "@stwrd/shared";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import schema from "./schema";
@@ -153,7 +153,7 @@ describe("admin queues (§9.3, §15)", () => {
 });
 
 describe("inbound ingest (§13)", () => {
-  test("a [LOT#claimId] reply is captured to the claim and notifies both parties", async () => {
+  test("a [STWRD#claimId] reply is captured to the claim and notifies both parties", async () => {
     const t = convexTest(schema, modules);
     const holder = await seedUser(t, MEMBER_PERMISSIONS);
     const claimant = await seedUser(t, MEMBER_PERMISSIONS);
@@ -163,7 +163,7 @@ describe("inbound ingest (§13)", () => {
     await t.mutation(internal.inbound.ingestInbound, {
       imapUid: 1,
       from: "claimant@example.org",
-      subject: `[LOT#${claimId}] Re: pickup tonight`,
+      subject: `[STWRD#${claimId}] Re: pickup tonight`,
       bodyText: "I can grab it at 6pm.",
     });
 

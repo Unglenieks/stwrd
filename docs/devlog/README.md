@@ -1,6 +1,6 @@
 # Development log
 
-Chronological record of implementation work on the Distributed Library of Things,
+Chronological record of implementation work on Stwrd,
 organized by the spec's five implementation phases (§21). Each entry documents
 what was built, why, how it was verified, and any deviations from `spec.md`.
 

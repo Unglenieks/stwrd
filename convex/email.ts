@@ -2,7 +2,7 @@
 // the queue with retry/backoff (the drain + IMAP poll land in Phase 3/4). The
 // outbox doubles as the delivery log for the admin panel (§15).
 import { v } from "convex/values";
-import { OUTBOX_BACKOFF_MS, OUTBOX_MAX_ATTEMPTS } from "@lot/shared";
+import { OUTBOX_BACKOFF_MS, OUTBOX_MAX_ATTEMPTS } from "@stwrd/shared";
 import type { Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery, type MutationCtx } from "./_generated/server";
 
