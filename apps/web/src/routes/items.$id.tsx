@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
 import type { Id } from "@cvx/dataModel";
-import { CONDITION_RUBRIC, PAGE_SIZE_LEDGER } from "@lot/shared";
+import { CONDITION_RUBRIC, PAGE_SIZE_LEDGER } from "@stwrd/shared";
 import { Button, Card, FieldError } from "~/components/ui";
 import { ClaimScreen } from "~/components/ClaimScreen";
 import { StewardControls } from "~/components/StewardControls";

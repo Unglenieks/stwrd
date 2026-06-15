@@ -22,11 +22,11 @@ jobs:
       - name: Typecheck
         run: pnpm -r typecheck && pnpm exec tsc -p convex/tsconfig.json --noEmit
       - name: Shared unit tests
-        run: pnpm -F @lot/shared test
+        run: pnpm -F @stwrd/shared test
       - name: Convex unit + conformance tests
         run: pnpm test:convex
       - name: Frontend build
-        run: pnpm -F @lot/web build
+        run: pnpm -F @stwrd/web build
 
   # Backup → restore drill (§18.4) against a seeded self-hosted instance.
   restore-drill:

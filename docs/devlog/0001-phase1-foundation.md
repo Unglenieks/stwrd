@@ -9,7 +9,7 @@
 
 ## Completed
 
-### `@lot/shared` — single source of truth (§22.0, §23)
+### `@stwrd/shared` — single source of truth (§22.0, §23)
 
 Imported by both the Convex backend and the frontend; no inline literals are
 permitted elsewhere.
@@ -22,9 +22,9 @@ permitted elsewhere.
 | `errors.ts` | §22.5 | Closed error-code enum + `AppError` + `fail`/`assert` + default copy. |
 | `schemas.ts` | §22.1, §22.2 | Zod argument schemas for every auth/HTTP and Convex function in the interface contract. |
 
-**Verification:** `pnpm -F @lot/shared test` → 6 passing (catalog size = 16,
+**Verification:** `pnpm -F @stwrd/shared test` → 6 passing (catalog size = 16,
 unknown-key rejection, Member baseline, full-permission predicate, claim-expiry
-default, outbox backoff). `pnpm -F @lot/shared typecheck` clean.
+default, outbox backoff). `pnpm -F @stwrd/shared typecheck` clean.
 
 ### Convex schema (§7)
 

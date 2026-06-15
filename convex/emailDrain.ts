@@ -4,7 +4,7 @@
 // drains it on a cron with retry/backoff. The outbox doubles as the delivery log.
 import { v } from "convex/values";
 import nodemailer from "nodemailer";
-import { AppError } from "@lot/shared";
+import { AppError } from "@stwrd/shared";
 import { api, internal } from "./_generated/api";
 import { action, internalAction } from "./_generated/server";
 import { decryptSecret } from "./lib/crypto";

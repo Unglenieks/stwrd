@@ -2,7 +2,7 @@ import { useConvexAuth, useAction, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { api } from "@cvx/api";
-import { PERMISSIONS } from "@lot/shared";
+import { PERMISSIONS } from "@stwrd/shared";
 import { Button, Card, FieldError, Input, Label } from "~/components/ui";
 
 export const Route = createFileRoute("/admin/settings")({

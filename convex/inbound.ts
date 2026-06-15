@@ -4,14 +4,14 @@
 // mail NEVER triggers state changes — it is a passive coordination *record*
 // (§1.2), so this only logs and notifies.
 import { v } from "convex/values";
-import { INBOUND_BODY_MAX_BYTES, INBOUND_REPLY_EXCERPT_MAX } from "@lot/shared";
+import { INBOUND_BODY_MAX_BYTES, INBOUND_REPLY_EXCERPT_MAX } from "@stwrd/shared";
 import type { Id } from "./_generated/dataModel";
 import { internalMutation } from "./_generated/server";
 import { notify } from "./lib/notify";
 
 const BOUNCE_FROM = /mailer-daemon|postmaster|no-?reply/i;
 const BOUNCE_SUBJECT = /undeliver|delivery status notification|failure notice|returned mail|mail delivery failed/i;
-const LOT_TOKEN = /\[LOT#([^\]\s]+)\]/i;
+const STWRD_TOKEN = /\[STWRD#([^\]\s]+)\]/i;
 
 export const ingestInbound = internalMutation({
   args: {
@@ -39,10 +39,10 @@ export const ingestInbound = internalMutation({
     if (isBounce) {
       disposition = "bounce";
     } else {
-      // Match a reply to a claim via the [LOT#<id>] subject token or the
+      // Match a reply to a claim via the [STWRD#<id>] subject token or the
       // plus-addressed recipient (library+claim-<id>@…).
       const token =
-        args.subject.match(LOT_TOKEN)?.[1] ??
+        args.subject.match(STWRD_TOKEN)?.[1] ??
         args.toAddress?.match(/\+claim-([a-z0-9]+)@/i)?.[1];
       const claimId = token ? ctx.db.normalizeId("claims", token) : null;
       if (claimId) {

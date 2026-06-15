@@ -2,7 +2,7 @@
  * Convex schema — spec §7.
  *
  * Validators are the server-side enforcement of the data model. Enum value sets
- * mirror `@lot/shared/enums`; where Convex needs literal unions we spell them
+ * mirror `@stwrd/shared/enums`; where Convex needs literal unions we spell them
  * out here and keep them in lockstep with the shared enums (the shared package
  * is the source the frontend reads; this file is what the database enforces).
  */
@@ -246,7 +246,7 @@ export default defineSchema({
     nextAttemptAt: v.number(),
     lastError: v.optional(v.string()),
     messageId: v.optional(v.string()),
-    // Matching key for inbound replies (claim plus-address / [LOT#id] token, §13).
+    // Matching key for inbound replies (claim plus-address / [STWRD#id] token, §13).
     claimId: v.optional(v.id("claims")),
     createdAt: v.number(),
   })

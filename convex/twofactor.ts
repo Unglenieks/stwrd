@@ -3,7 +3,7 @@
 // these factors lives in the /auth/* HTTP actions (convex/http.ts).
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { AppError } from "@lot/shared";
+import { AppError } from "@stwrd/shared";
 import { internal } from "./_generated/api";
 import type { ActionCtx } from "./_generated/server";
 import { action, query } from "./_generated/server";

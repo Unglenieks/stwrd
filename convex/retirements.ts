@@ -3,7 +3,7 @@
 // cannot approve their own proposal unless they are the org's only approver
 // (small-org escape hatch, flagged in the audit feed).
 import { v } from "convex/values";
-import { AppError, PERMISSIONS } from "@lot/shared";
+import { AppError, PERMISSIONS } from "@stwrd/shared";
 import type { Id } from "./_generated/dataModel";
 import { mutation, type QueryCtx } from "./_generated/server";
 import { recordAudit } from "./lib/instance";

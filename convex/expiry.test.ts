@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
-import { MEMBER_PERMISSIONS } from "@lot/shared";
+import { MEMBER_PERMISSIONS } from "@stwrd/shared";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import schema from "./schema";

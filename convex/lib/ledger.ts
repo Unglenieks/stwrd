@@ -4,8 +4,8 @@
 // incremented in the SAME mutation that inserts the entry — transactional, so
 // per-item seq strictly increases by 1 with no gaps or dupes (C-14, C-20). No
 // code ever updates or deletes a ledger row.
-import type { LedgerEntryType } from "@lot/shared";
-import { AppError } from "@lot/shared";
+import type { LedgerEntryType } from "@stwrd/shared";
+import { AppError } from "@stwrd/shared";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 

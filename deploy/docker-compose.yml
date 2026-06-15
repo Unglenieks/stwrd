@@ -1,4 +1,4 @@
-# Distributed Library of Things — reference deployment (spec §19.1).
+# Stwrd — reference deployment (spec §19.1).
 #
 # Three services + reverse proxy, one stack. Image tags are pinned (never
 # `latest`, per §4). Bring up: `cp .env.example .env`, fill it, `docker compose up -d`.

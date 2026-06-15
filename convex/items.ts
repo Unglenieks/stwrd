@@ -13,7 +13,7 @@ import {
   itemsStatusUpdateInput,
   itemsUpdateInput,
   PERMISSIONS,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { internal } from "./_generated/api";

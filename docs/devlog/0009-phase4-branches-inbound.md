@@ -33,7 +33,7 @@
 
 ### Inbound email / IMAP (§13)
 - `inbound.ingestInbound` (testable internal mutation): classifies each message as
-  **bounce** (DSN), **logged** (reply matched to a claim via the `[LOT#id]`
+  **bounce** (DSN), **logged** (reply matched to a claim via the `[STWRD#id]`
   subject token or `+claim-<id>` plus-address → appended to the claim record +
   both parties notified), or **unmatched**; UID-deduped; never changes state.
 - `imapPoll.pollInbound` (Node action, ImapFlow): connect → fetch unseen →
@@ -59,7 +59,7 @@
 - IMAP socket layer is exercised via the testable `ingestInbound` (the actual
   classification logic); a live IMAP server e2e (e.g. greenmail) is a nice-to-have
   deferred to the Phase 5 conformance work — the matching is fully unit-tested.
-- The `[LOT#id]` token regex was widened to `[^\]\s]+` (Convex ids aren't pure
+- The `[STWRD#id]` token regex was widened to `[^\]\s]+` (Convex ids aren't pure
   `[a-z0-9]`).
 - Bounce → outbox-row correlation ("member email may be broken") currently
   surfaces the bounce in the unmatched/inbound admin view; tighter linking to the

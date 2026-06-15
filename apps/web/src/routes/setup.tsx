@@ -5,7 +5,7 @@ import { api } from "@cvx/api";
 import {
   CLAIM_EXPIRY_HOURS_DEFAULT,
   PASSWORD_MIN_LENGTH,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { Button, Card, FieldError, Input, Label } from "~/components/ui";
 
 export const Route = createFileRoute("/setup")({

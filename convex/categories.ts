@@ -4,7 +4,7 @@
 // never blocks (§22.4): items keep their reference; archived nodes just drop out
 // of pickers and gain an "(archived)" suffix in displays.
 import { v } from "convex/values";
-import { AppError, CATEGORY_MAX_DEPTH, PERMISSIONS } from "@lot/shared";
+import { AppError, CATEGORY_MAX_DEPTH, PERMISSIONS } from "@stwrd/shared";
 import type { Doc, Id } from "./_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import { recordAudit } from "./lib/instance";

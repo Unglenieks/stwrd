@@ -1,7 +1,7 @@
 // Admin dashboard queries (spec §15, §22.2). Each is gated by the permission its
 // panel requires; a member sees only the panels their permissions allow.
 import { paginationOptsValidator } from "convex/server";
-import { PERMISSIONS } from "@lot/shared";
+import { PERMISSIONS } from "@stwrd/shared";
 import { query } from "./_generated/server";
 import { requirePermission } from "./lib/permissions";
 

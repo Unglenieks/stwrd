@@ -9,7 +9,7 @@ import {
   EMAIL_OTP_MAX_ATTEMPTS,
   MEMBER_PERMISSIONS,
   PERMISSIONS,
-} from "@lot/shared";
+} from "@stwrd/shared";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import schema from "./schema";

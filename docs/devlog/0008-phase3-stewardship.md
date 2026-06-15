@@ -35,7 +35,7 @@
   `email` and the kind has a template — enqueued into `emailOutbox` (the delivery
   log), in-app always sent.
 - `lib/emailTemplates.ts`: the §23.4 templates (normative subjects, plain-text
-  bodies, URLs from `siteUrl`, `[LOT#id]` token).
+  bodies, URLs from `siteUrl`, `[STWRD#id]` token).
 - `emailDrain.ts` (**Node runtime**): `drainOutbox` cron action (every 1 min) —
   Nodemailer over the org SMTP (password decrypted with `APP_SECRETS_KEY`),
   retry/backoff (3 attempts, 1m/10m/60m), marks sent/failed. `testSmtp` action.

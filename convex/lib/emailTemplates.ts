@@ -1,9 +1,9 @@
 // Email template rendering (spec §23.4). Subject lines are NORMATIVE. Bodies are
 // plain text and derive every absolute URL from `siteUrl` (PUBLIC_SITE_ORIGIN,
-// §19.5) — there is no second editable base URL. The `[LOT#{claimId}]` subject
+// §19.5) — there is no second editable base URL. The `[STWRD#{claimId}]` subject
 // token (and a reply-to plus-address where supported) is the inbound-matching
 // key (§13).
-import type { EmailTemplate } from "@lot/shared";
+import type { EmailTemplate } from "@stwrd/shared";
 
 export interface RenderCtx {
   orgName: string;
@@ -27,14 +27,14 @@ export function renderEmail(
 ): RenderedEmail {
   const { orgName, siteUrl } = ctx;
   const itemUrl = payload.itemId ? `${siteUrl}/items/${s(payload.itemId)}` : siteUrl;
-  const claimToken = payload.claimId ? `[LOT#${s(payload.claimId)}] ` : "";
+  const claimToken = payload.claimId ? `[STWRD#${s(payload.claimId)}] ` : "";
   const title = s(payload.itemTitle, "an item");
 
   switch (template) {
     case "invite":
       return {
         subject: `You're invited to ${orgName}`,
-        text: `Hi ${s(payload.name, "there")},\n\nYou've been invited to join ${orgName}, a community library of things.\n\nAccept your invitation:\n${s(payload.inviteUrl, siteUrl)}\n\nThis link expires in 72 hours.`,
+        text: `Hi ${s(payload.name, "there")},\n\nYou've been invited to join ${orgName}.\n\nAccept your invitation:\n${s(payload.inviteUrl, siteUrl)}\n\nThis link expires in 72 hours.`,
       };
     case "otp":
       return {

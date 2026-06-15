@@ -54,4 +54,4 @@
 All five spec phases (§21) are implemented and tested: foundation/auth →
 circulation core → stewardship → branches & inbound email → polish & ops. A
 community org can self-host the stack, bootstrap, invite members, and run a
-custody-based library of things end to end.
+Stwrd's custody-based sharing workflow end to end.

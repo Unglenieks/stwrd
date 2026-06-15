@@ -7,7 +7,7 @@
 // (C-08). confirmReceiver is an action (photo verification needs blob I/O, §18.1)
 // delegating to an internal mutation for the atomic finalize.
 import { v } from "convex/values";
-import { AppError, CLAIM_EXPIRING_WARN_HOURS, PERMISSIONS } from "@lot/shared";
+import { AppError, CLAIM_EXPIRING_WARN_HOURS, PERMISSIONS } from "@stwrd/shared";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";

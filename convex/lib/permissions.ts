@@ -4,7 +4,7 @@
 // cosmetic; THIS is the boundary. Effective permissions are the union across all
 // of a member's roles.
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { AppError, isFullPermissionSet, type Permission } from "@lot/shared";
+import { AppError, isFullPermissionSet, type Permission } from "@stwrd/shared";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 

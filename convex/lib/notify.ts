@@ -2,7 +2,7 @@
 // email side (outbox enqueue per the recipient's preference) + the inbox UI land
 // in Phase 3; this is the write primitive the circulation flows call now so the
 // data is captured from the start.
-import type { NotificationKind } from "@lot/shared";
+import type { NotificationKind } from "@stwrd/shared";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { enqueueEmail } from "../email";

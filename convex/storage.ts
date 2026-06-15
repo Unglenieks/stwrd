@@ -1,7 +1,7 @@
 // File storage: upload URLs, authenticated URL serving, and server-side photo
 // verification (spec §18.1, §18.2).
 import { v } from "convex/values";
-import { AppError, PHOTO_MAX_BYTES } from "@lot/shared";
+import { AppError, PHOTO_MAX_BYTES } from "@stwrd/shared";
 import type { ActionCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";

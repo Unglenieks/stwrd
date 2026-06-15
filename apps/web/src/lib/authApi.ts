@@ -2,7 +2,7 @@
 // from Convex Auth's own action surface: they implement password + second-factor
 // elevation and return a completion token, which the caller then exchanges for a
 // session via Convex Auth's signIn("credentials", { completionToken }).
-import { ERROR_MESSAGES, isErrorCode, type ErrorCode } from "@lot/shared";
+import { ERROR_MESSAGES, isErrorCode, type ErrorCode } from "@stwrd/shared";
 
 export class AuthError extends Error {
   readonly code: ErrorCode | "unknown";

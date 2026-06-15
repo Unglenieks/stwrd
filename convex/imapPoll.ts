@@ -16,7 +16,7 @@ interface ImapConfig {
   passwordEnc: { ciphertext: string; iv: string; tag: string };
 }
 
-/** Best-effort plaintext body from raw RFC822 (the [LOT#id] match key is in the
+/** Best-effort plaintext body from raw RFC822 (the [STWRD#id] match key is in the
  *  subject, so a rough body is fine; it's stored as the coordination record). */
 function extractPlainBody(raw: string): string {
   const split = raw.indexOf("\r\n\r\n");

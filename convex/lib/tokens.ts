@@ -2,7 +2,7 @@
 //
 // We store only SHA-256 hashes of invite tokens, mfa_pending tokens, email OTPs,
 // and recovery codes — the raw value is shown once and never persisted.
-import { EMAIL_OTP_DIGITS, RECOVERY_CODE_COUNT } from "@lot/shared";
+import { EMAIL_OTP_DIGITS, RECOVERY_CODE_COUNT } from "@stwrd/shared";
 
 const enc = new TextEncoder();
 
