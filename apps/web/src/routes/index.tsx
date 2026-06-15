@@ -94,13 +94,19 @@ function AdminLinks() {
   const perms = useQuery(api.roles.myPermissions) ?? [];
   const showClaims = perms.includes(PERMISSIONS.claimsManageAny) || perms.includes(PERMISSIONS.usersManage);
   const showSettings = perms.includes(PERMISSIONS.instanceSettings);
-  if (!showClaims && !showSettings) return null;
+  const showAudit = perms.includes(PERMISSIONS.instanceAuditView);
+  if (!showClaims && !showSettings && !showAudit) return null;
   return (
     <div className="mt-3 flex gap-3 text-sm">
       <span className="text-slate-400">Admin:</span>
       {showClaims && (
         <Link to="/admin/claims" className="text-slate-700 underline">
           Circulation
+        </Link>
+      )}
+      {showAudit && (
+        <Link to="/admin/audit" className="text-slate-700 underline">
+          Audit &amp; email
         </Link>
       )}
       {showSettings && (

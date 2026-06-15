@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # weekly dependency audit (Mon 06:00 UTC, §18.1)
+
+jobs:
+  # Fast gate — typecheck + unit tests. convex-test runs in-process against the
+  # committed convex/_generated, so no backend is needed here.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm -r typecheck && pnpm exec tsc -p convex/tsconfig.json --noEmit
+      - name: Shared unit tests
+        run: pnpm -F @lot/shared test
+      - name: Convex unit + conformance tests
+        run: pnpm test:convex
+      - name: Frontend build
+        run: pnpm -F @lot/web build
+
+  # Backup → restore drill (§18.4) against a seeded self-hosted instance.
+  restore-drill:
+    runs-on: ubuntu-latest
+    services:
+      convex:
+        image: ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463
+        env:
+          INSTANCE_NAME: lot-ci
+          INSTANCE_SECRET: 0000000000000000000000000000000000000000000000000000000000000000
+          CONVEX_CLOUD_ORIGIN: http://127.0.0.1:3210
+          CONVEX_SITE_ORIGIN: http://127.0.0.1:3211
+          DISABLE_BEACON: "true"
+        ports: ["3210:3210", "3211:3211"]
+        options: >-
+          --health-cmd "curl -f http://localhost:3210/version || exit 1"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Generate admin key
+        id: adminkey
+        run: |
+          KEY=$(docker exec "${{ job.services.convex.id }}" ./generate_admin_key.sh | tail -1)
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+      - name: Deploy + seed + restore drill
+        env:
+          CONVEX_SELF_HOSTED_URL: http://127.0.0.1:3210
+          CONVEX_SELF_HOSTED_ADMIN_KEY: ${{ steps.adminkey.outputs.key }}
+          CONVEX_TMPDIR: ${{ github.workspace }}/.convex-tmp
+        run: |
+          mkdir -p "$CONVEX_TMPDIR"
+          npx convex deploy -y
+          npx convex run setup:wizard '{"serverManagerName":"CI","serverManagerEmail":"ci@example.test","password":"ci-restore-drill-pw","orgName":"CI Org","twoFactorPolicy":"off","claimExpiryHours":168}'
+          bash deploy/restore-drill.sh

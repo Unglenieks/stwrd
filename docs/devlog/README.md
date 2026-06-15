@@ -16,6 +16,7 @@ what was built, why, how it was verified, and any deviations from `spec.md`.
 | 0007 | [Phase 2 · Step 5: Expiry cron & lifecycle polish](0007-phase2-step5-expiry-polish.md) | 2 | ✅ Done |
 | 0008 | [Phase 3: Stewardship](0008-phase3-stewardship.md) | 3 | ✅ Done |
 | 0009 | [Phase 4: Branches & inbound email](0009-phase4-branches-inbound.md) | 4 | ✅ Done |
+| 0010 | [Phase 5: Polish & ops](0010-phase5-polish-ops.md) | 5 | ✅ Done |
 
 ## Conventions
 

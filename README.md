@@ -51,9 +51,10 @@ A Caddy reverse proxy terminates TLS and routes a single public hostname.
 
 ## Status
 
-Phases 1–4 of 5 are complete. See [`docs/devlog`](./docs/devlog/) for the
+**All five spec phases are complete.** See [`docs/devlog`](./docs/devlog/) for the
 per-phase implementation record (what was built, verification evidence, and any
-deviations from the spec).
+deviations from the spec), the [conformance map](./docs/conformance.md) (§24
+C-01…C-21 → tests), and the [operations guide](./docs/ops-README.md).
 
 | Phase | Status |
 |---|---|
@@ -61,24 +62,27 @@ deviations from the spec).
 | 2 · Circulation core — contribution (camera → EXIF-stripped upload), catalog + search, claim & two-party photo handoff, ledger timeline, expiry crons, "My library" | ✅ |
 | 3 · Stewardship — repair + retirement workflows, watching, notifications inbox, SMTP outbox (Nodemailer, retry/backoff) | ✅ |
 | 4 · Branches & inbound email — branch drop points + staging, branch handoffs, IMAP poll (reply capture + bounce detection), admin queues (stuck handoffs, recovery) | ✅ |
-| 5 · Polish & ops — audit-feed UI, delivery-log UI, backup/restore + CI restore drill, full §24 Playwright conformance suite, ops docs | ⬜ next |
+| 5 · Polish & ops — audit-feed + delivery-log UI, backup/restore + CI restore drill, §24 conformance suite, ops/LXC/domain-change docs | ✅ |
 
-**What a member can do today:** sign in (policy-driven 2FA), browse/search the
-catalog, contribute items, claim and complete a **two-party photo-verified
-handoff** that moves custody, follow each item's **immutable ledger timeline**,
-log repairs, propose/approve retirement, watch items, drop off / pick up / stage
-at **member-hosted branches**, and manage everything from **My library** — with
-email notifications, automatic claim expiry, and admin queues for stuck handoffs
-and custodian-inactive recovery.
+**What a member can do:** sign in (policy-driven 2FA), browse/search the catalog,
+contribute items, claim and complete a **two-party photo-verified handoff** that
+moves custody, follow each item's **immutable ledger timeline**, log repairs,
+propose/approve retirement, watch items, drop off / pick up / stage at
+**member-hosted branches**, receive **email notifications** (reply capture +
+bounce detection via IMAP), and manage everything from **My library** — with
+automatic claim expiry, an admin **audit & delivery log**, and queues for stuck
+handoffs and custodian-inactive recovery.
 
 ### Verification
 
-The app is exercised by **47 Convex unit tests** (convex-test, in-process) and
-**11 Playwright end-to-end tests** that drive the real UI against the live
+Exercised by **52 Convex unit/conformance tests** (convex-test, in-process) and
+**11 Playwright end-to-end tests** driving the real UI against the live
 self-hosted backend — including a two-account driveway handoff, real SMTP
-delivery to a mailpit catcher, and the branch flow. Run them with:
+delivery to a mailpit catcher, the branch flow, and the §24 acceptance scenarios.
+CI (`.github/workflows/ci.yml`) runs typecheck + unit tests + a **backup/restore
+drill** against a throwaway backend.
 
 ```bash
-pnpm test:convex                 # backend unit tests
-cd apps/web && pnpm exec playwright test   # e2e (needs the local stack + mailpit)
+pnpm test:convex                            # backend unit + conformance tests
+cd apps/web && pnpm exec playwright test    # e2e (needs the local stack + mailpit)
 ```

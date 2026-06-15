@@ -22,6 +22,7 @@ import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as BranchesIdRouteImport } from './routes/branches.$id'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminClaimsRouteImport } from './routes/admin.claims'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -88,12 +89,18 @@ const AdminClaimsRoute = AdminClaimsRouteImport.update({
   path: '/admin/claims',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/claims': typeof AdminClaimsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/branches/$id': typeof BranchesIdRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/claims': typeof AdminClaimsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/branches/$id': typeof BranchesIdRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/contribute': typeof ContributeRoute
   '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/claims': typeof AdminClaimsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/branches/$id': typeof BranchesIdRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/audit'
     | '/admin/claims'
     | '/admin/settings'
     | '/branches/$id'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/audit'
     | '/admin/claims'
     | '/admin/settings'
     | '/branches/$id'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/login'
     | '/setup'
+    | '/admin/audit'
     | '/admin/claims'
     | '/admin/settings'
     | '/branches/$id'
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   ContributeRoute: typeof ContributeRoute
   LoginRoute: typeof LoginRoute
   SetupRoute: typeof SetupRoute
+  AdminAuditRoute: typeof AdminAuditRoute
   AdminClaimsRoute: typeof AdminClaimsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   BranchesIdRoute: typeof BranchesIdRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminClaimsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -300,6 +320,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContributeRoute: ContributeRoute,
   LoginRoute: LoginRoute,
   SetupRoute: SetupRoute,
+  AdminAuditRoute: AdminAuditRoute,
   AdminClaimsRoute: AdminClaimsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   BranchesIdRoute: BranchesIdRoute,
