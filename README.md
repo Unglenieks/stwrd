@@ -45,7 +45,7 @@ No central drop-off. No overdue notices. No queue politics. If you are looking a
 ### 1. Get the code
 
 ```bash
-git clone https://github.com/your-org/stwrd.git
+git clone https://github.com/Unglenieks/stwrd.git
 cd stwrd
 ```
 
