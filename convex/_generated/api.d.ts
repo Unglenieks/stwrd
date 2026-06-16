@@ -36,6 +36,7 @@ import type * as me from "../me.js";
 import type * as notifications from "../notifications.js";
 import type * as retirements from "../retirements.js";
 import type * as roles from "../roles.js";
+import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
 import type * as setup from "../setup.js";
 import type * as storage from "../storage.js";
@@ -80,6 +81,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   retirements: typeof retirements;
   roles: typeof roles;
+  seed: typeof seed;
   settings: typeof settings;
   setup: typeof setup;
   storage: typeof storage;

@@ -19,7 +19,11 @@ backups/
 .env
 .env.*
 !.env.example
+!.env.quickstart
 *.local
+
+# Bootstrap-generated credentials (host-readable but never committed)
+deploy/secrets/
 
 # Logs
 *.log

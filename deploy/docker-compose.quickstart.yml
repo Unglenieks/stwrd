@@ -1,16 +1,14 @@
-# Stwrd — production deployment (spec §19.1).
+# Stwrd — localhost quickstart (HTTP only, no domain, no TLS).
 #
 # Usage:
-#   1. cp .env.example .env  — fill in SITE_ORIGIN, INSTANCE_NAME/SECRET, ORG_NAME
-#   2. docker compose up -d
-#   3. docker compose logs bootstrap   # credentials printed here on first run
-#   4. cat secrets/server-manager-credentials.txt
+#   cd deploy
+#   docker compose -f docker-compose.quickstart.yml up -d
+#   # Wait ~60s for bootstrap to finish, then:
+#   cat secrets/server-manager-credentials.txt
+#   # Open http://localhost in your browser.
 #
-# The bootstrap service runs once, deploys functions, generates secrets, and
-# creates the server-manager account. Subsequent `up -d` calls are safe — it
-# detects the provisioned state and exits immediately.
-#
-# Image digests are pinned (never `latest`, per §4).
+# Everything is pre-configured. No edits needed before the first run.
+# Uses .env.quickstart automatically (see --env-file below or rename to .env).
 
 services:
   backend:
@@ -20,15 +18,11 @@ services:
     environment:
       - INSTANCE_NAME=${INSTANCE_NAME}
       - INSTANCE_SECRET=${INSTANCE_SECRET}
-      # CONVEX_CLOUD_ORIGIN: client API origin the browser connects to (websocket + HTTP).
-      # Equals SITE_ORIGIN + /api — set explicitly in .env.
-      - CONVEX_CLOUD_ORIGIN=${CONVEX_CLOUD_ORIGIN}
-      # CONVEX_SITE_ORIGIN: where the backend resolves its own JWKS and auth endpoints.
-      # Always the backend's internal Docker address — never needs to change.
+      - CONVEX_CLOUD_ORIGIN=http://localhost/api
       - CONVEX_SITE_ORIGIN=http://backend:3211
-      - POSTGRES_URL=${POSTGRES_URL:-}
+      - POSTGRES_URL=
       - DISABLE_BEACON=true
-      - REDACT_LOGS_TO_CLIENT=${REDACT_LOGS_TO_CLIENT:-true}
+      - REDACT_LOGS_TO_CLIENT=false
     volumes:
       - data:/convex/data
     healthcheck:
@@ -49,7 +43,7 @@ services:
     environment:
       - INSTANCE_NAME=${INSTANCE_NAME}
       - INSTANCE_SECRET=${INSTANCE_SECRET}
-      - SITE_ORIGIN=${SITE_ORIGIN}
+      - SITE_ORIGIN=http://localhost
       - ORG_NAME=${ORG_NAME:-My Library}
       - SERVER_MANAGER_EMAIL=${SERVER_MANAGER_EMAIL:-}
       - SERVER_MANAGER_PASSWORD=${SERVER_MANAGER_PASSWORD:-}
@@ -65,7 +59,7 @@ services:
     ports:
       - "127.0.0.1:6791:6791"
     environment:
-      - NEXT_PUBLIC_DEPLOYMENT_URL=${CONVEX_CLOUD_ORIGIN}
+      - NEXT_PUBLIC_DEPLOYMENT_URL=http://localhost/api
     depends_on:
       backend:
         condition: service_healthy
@@ -75,7 +69,7 @@ services:
       context: ..
       dockerfile: apps/web/Dockerfile
     environment:
-      - SITE_ORIGIN=${SITE_ORIGIN}
+      - SITE_ORIGIN=http://localhost
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 10s
@@ -90,13 +84,10 @@ services:
     image: caddy:2.8
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      - PROXY_HOSTNAME=${PROXY_HOSTNAME}
-      - ACME_EMAIL=${ACME_EMAIL}
+      - "127.0.0.1:80:80"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # :z relabels the file for SELinux (needed on Fedora/RHEL hosts)
+      - ./Caddyfile.local:/etc/caddy/Caddyfile:ro,z
       - caddy_data:/data
       - caddy_config:/config
     depends_on:

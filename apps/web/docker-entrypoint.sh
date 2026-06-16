@@ -1,22 +1,28 @@
 #!/bin/sh
-# Writes /runtime-config.json from the runtime environment before the server
-# starts (spec §19.5). The client fetches it before opening the Convex
-# connection — so the public hostname is never baked into the image.
+# Writes runtime-config.json from the environment before the server starts (spec §19.5).
+# The client fetches this file before opening the Convex connection, so the public
+# hostname is never baked into the image — a domain change needs only a restart.
 #
-#   apiUrl  ← PUBLIC_API_ORIGIN          (Convex client API)
-#   siteUrl ← PUBLIC_CONVEX_SITE_ORIGIN  (Convex HTTP actions: /auth/*, well-known)
+#   apiUrl  — Convex client API (WebSocket + HTTP)  → SITE_ORIGIN/api
+#   siteUrl — Convex HTTP actions (auth, JWKS)       → SITE_ORIGIN
+#
+# SITE_ORIGIN is the single required input. The legacy PUBLIC_API_ORIGIN and
+# PUBLIC_CONVEX_SITE_ORIGIN are still accepted as explicit overrides for
+# advanced split-origin deployments.
 set -e
 
-: "${PUBLIC_API_ORIGIN:?PUBLIC_API_ORIGIN is required}"
-: "${PUBLIC_CONVEX_SITE_ORIGIN:?PUBLIC_CONVEX_SITE_ORIGIN is required}"
+: "${SITE_ORIGIN:?SITE_ORIGIN is required (e.g. https://library.example.org or http://localhost)}"
 
-CONFIG_PATH="/app/.output/public/runtime-config.json"
+API_URL="${PUBLIC_API_ORIGIN:-${SITE_ORIGIN}/api}"
+SITE_URL="${PUBLIC_CONVEX_SITE_ORIGIN:-${SITE_ORIGIN}}"
+
+CONFIG_PATH="/app/dist/client/runtime-config.json"
 cat > "$CONFIG_PATH" <<EOF
 {
-  "apiUrl": "${PUBLIC_API_ORIGIN}",
-  "siteUrl": "${PUBLIC_CONVEX_SITE_ORIGIN}"
+  "apiUrl": "${API_URL}",
+  "siteUrl": "${SITE_URL}"
 }
 EOF
-echo "wrote $CONFIG_PATH (apiUrl=${PUBLIC_API_ORIGIN}, siteUrl=${PUBLIC_CONVEX_SITE_ORIGIN})"
+echo "wrote $CONFIG_PATH (apiUrl=${API_URL}, siteUrl=${SITE_URL})"
 
 exec "$@"

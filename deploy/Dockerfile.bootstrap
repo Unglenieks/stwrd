@@ -1,0 +1,54 @@
+# Bootstrap container — runs once after backend is healthy to provision a fresh instance.
+# Handles: function deployment, secret generation, setup wizard, credential output.
+#
+# Build context is the REPO ROOT:
+#   docker build -f deploy/Dockerfile.bootstrap -t stwrd-bootstrap .
+
+# ── Stage 1: extract generate_key from the pinned convex-backend image ────────
+FROM ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463 AS backend-bins
+
+# ── Stage 2: bootstrap runner ─────────────────────────────────────────────────
+# Ubuntu 24.04 (Noble) — same distro as the convex-backend image, ensuring
+# GLIBC compatibility so generate_key runs without issues.
+# Node.js 22 is installed from the NodeSource distribution.
+FROM ubuntu:24.04
+WORKDIR /repo
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      openssl curl ca-certificates gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+
+# generate_key derives the Convex admin key from INSTANCE_NAME + INSTANCE_SECRET.
+COPY --from=backend-bins /convex/generate_key /usr/local/bin/generate_key
+RUN chmod +x /usr/local/bin/generate_key
+
+# Install workspace deps — manifests first for layer caching.
+# We need: convex CLI (for deploy + env set) and jose (for JWT key generation).
+# We copy apps/web/package.json so pnpm doesn't complain about a missing workspace member,
+# but we don't copy the frontend source (not needed here).
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY packages/shared/package.json packages/shared/
+COPY apps/web/package.json apps/web/
+RUN pnpm install --frozen-lockfile --ignore-scripts
+
+# Convex source (bundled and uploaded by `npx convex deploy`).
+COPY convex/ convex/
+COPY convex.json ./
+COPY packages/shared/ packages/shared/
+
+# Bootstrap helper scripts — placed in /repo/ so Node.js ESM resolution
+# finds the jose package in /repo/node_modules/ automatically.
+COPY deploy/bootstrap-setup.mjs   bootstrap-setup.mjs
+COPY deploy/generate-jwt-keys.mjs generate-jwt-keys.mjs
+
+# Entry script lives in /app/ to keep it separate from the Convex source.
+COPY deploy/bootstrap.sh /app/bootstrap.sh
+RUN chmod +x /app/bootstrap.sh
+
+CMD ["/bin/sh", "/app/bootstrap.sh"]
