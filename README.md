@@ -6,6 +6,8 @@ Stwrd is a self-hosted web application for community organizations that share to
 
 Designed for churches, co-housing groups, land trusts, tool libraries, and any organization where responsibility is already part of the culture.
 
+![Member home screen showing available items](example-screenshots/Stwrd%20main.png)
+
 ---
 
 ## How it works
@@ -13,6 +15,8 @@ Designed for churches, co-housing groups, land trusts, tool libraries, and any o
 A member contributes something they are willing to share. The item enters the catalog, still in their care. When another member wants it, they claim it. The two of them arrange a physical exchange and confirm it in the app — each on their own device, with a photo from the receiver. Custody moves. The record updates. The item is now in the new member's care.
 
 No central drop-off. No overdue notices. No queue politics. If you are looking after something and you want to pass it along, you arrange it with the next person directly.
+
+![Catalog browse view with availability status](example-screenshots/Stwrd%20browse.png)
 
 ---
 
