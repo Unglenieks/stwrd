@@ -211,7 +211,9 @@ pnpm lint
 
 ## License
 
-MIT
+AGPL v3 — see [LICENSE](./LICENSE).
+
+You are free to use, modify, and self-host Stwrd. Any modified version deployed to users over a network must also make its source available under the same terms.
 
 ---
 
