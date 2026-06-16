@@ -8,6 +8,7 @@ const { ADMIN_KEY, BACKEND_URL, SM_EMAIL, SM_PASSWORD, ORG_NAME } = process.env;
 
 const resp = await fetch(`${BACKEND_URL}/api/function`, {
   method: "POST",
+  signal: AbortSignal.timeout(30_000),
   headers: {
     "Content-Type": "application/json",
     Authorization: `Convex ${ADMIN_KEY}`,
@@ -26,13 +27,23 @@ const resp = await fetch(`${BACKEND_URL}/api/function`, {
   }),
 });
 
-const result = await resp.json();
+const raw = await resp.text();
+let result;
+try {
+  result = JSON.parse(raw);
+} catch {
+  console.error("[bootstrap] Setup wizard returned non-JSON response:", raw);
+  process.exit(1);
+}
+
+if (!resp.ok) {
+  console.error("[bootstrap] Setup wizard HTTP error:", resp.status, JSON.stringify(result));
+  process.exit(1);
+}
+
 if (result.status !== "success") {
   // "already set up" is not an error on re-runs
-  if (
-    result.errorMessage &&
-    result.errorMessage.includes("already set up")
-  ) {
+  if (result.errorMessage?.includes("already set up")) {
     console.log("[bootstrap] Instance already set up — skipping wizard.");
     process.exit(0);
   }

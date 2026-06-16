@@ -48,6 +48,9 @@ export const populate = internalAction({
   args: { storageId: v.optional(v.id("_storage")) },
   handler: async (ctx, { storageId }): Promise<{ status: string; users?: number }> => {
     const count = await ctx.runQuery(internal.seed.userCount, {});
+    if (count === 0) {
+      throw new Error("Server manager not found; run setup wizard before seeding.");
+    }
     if (count > 1) return { status: "already_seeded", users: count };
 
     // Accept pre-uploaded storageId or upload from within the action.
@@ -110,15 +113,16 @@ export const insertAll = internalMutation({
       .query("roles")
       .withIndex("by_name", (q) => q.eq("name", "Member"))
       .first();
-    if (memberRole) {
-      for (const uid of Object.values(userIds)) {
-        const already = await ctx.db
-          .query("roleAssignments")
-          .withIndex("by_user_role", (q) => q.eq("userId", uid).eq("roleId", memberRole._id))
-          .first();
-        if (!already) {
-          await ctx.db.insert("roleAssignments", { userId: uid, roleId: memberRole._id });
-        }
+    if (!memberRole) {
+      throw new Error("Member role not found; run setup wizard before seeding.");
+    }
+    for (const uid of Object.values(userIds)) {
+      const already = await ctx.db
+        .query("roleAssignments")
+        .withIndex("by_user_role", (q) => q.eq("userId", uid).eq("roleId", memberRole._id))
+        .first();
+      if (!already) {
+        await ctx.db.insert("roleAssignments", { userId: uid, roleId: memberRole._id });
       }
     }
 
@@ -241,7 +245,7 @@ export const insertAll = internalMutation({
         exchangePref: opts.exchangePref,
         contributedBy: opts.contributor,
         contributedAt: ts,
-        lastAvailableAt: opts.state === "available" ? ts : ts - 86_400_000,
+        lastAvailableAt: ts,
         searchText: [opts.title, opts.description, ...opts.tags].join(" ").toLowerCase(),
       });
       const item = (await ctx.db.get(id))!;

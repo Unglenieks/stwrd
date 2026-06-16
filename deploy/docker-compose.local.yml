@@ -9,8 +9,8 @@ services:
     environment:
       - INSTANCE_NAME=${INSTANCE_NAME}
       - INSTANCE_SECRET=${INSTANCE_SECRET}
-      - CONVEX_CLOUD_ORIGIN=${PUBLIC_API_ORIGIN}
-      - CONVEX_SITE_ORIGIN=${CONVEX_SITE_ORIGIN}
+      - CONVEX_CLOUD_ORIGIN=${CONVEX_CLOUD_ORIGIN}
+      - CONVEX_SITE_ORIGIN=http://backend:3211
       - POSTGRES_URL=${POSTGRES_URL:-}
       - DISABLE_BEACON=true
       - REDACT_LOGS_TO_CLIENT=${REDACT_LOGS_TO_CLIENT:-false}
@@ -31,7 +31,7 @@ services:
     ports:
       - "127.0.0.1:6791:6791"
     environment:
-      - NEXT_PUBLIC_DEPLOYMENT_URL=${PUBLIC_API_ORIGIN}
+      - NEXT_PUBLIC_DEPLOYMENT_URL=${CONVEX_CLOUD_ORIGIN}
     depends_on:
       backend:
         condition: service_healthy
@@ -41,8 +41,7 @@ services:
       context: ..
       dockerfile: apps/web/Dockerfile
     environment:
-      - PUBLIC_API_ORIGIN=${PUBLIC_API_ORIGIN}
-      - PUBLIC_CONVEX_SITE_ORIGIN=${PUBLIC_CONVEX_SITE_ORIGIN}
+      - SITE_ORIGIN=${SITE_ORIGIN}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 10s

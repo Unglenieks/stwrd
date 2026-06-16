@@ -6,8 +6,11 @@
 # Optional env: ORG_NAME, SERVER_MANAGER_EMAIL, SERVER_MANAGER_PASSWORD
 set -e
 
+: "${INSTANCE_NAME:?INSTANCE_NAME is required}"
+: "${INSTANCE_SECRET:?INSTANCE_SECRET is required}"
+: "${SITE_ORIGIN:?SITE_ORIGIN is required}"
+
 BACKEND_URL="http://backend:3210"
-SITE_ORIGIN="${SITE_ORIGIN:-http://localhost}"
 
 echo ""
 echo "============================================================"
@@ -24,8 +27,11 @@ echo "[bootstrap] Deploying Convex functions..."
 cd /repo && npx convex deploy --admin-key "$ADMIN_KEY" --url "$BACKEND_URL"
 
 # ── 3. Idempotency check ─────────────────────────────────────────────────────
-PROVISIONED=$(npx convex env list --admin-key "$ADMIN_KEY" --url "$BACKEND_URL" 2>/dev/null \
-  | grep "^JWT_PRIVATE_KEY=" || true)
+if ! ENV_LIST=$(npx convex env list --admin-key "$ADMIN_KEY" --url "$BACKEND_URL" 2>/dev/null); then
+  echo "[bootstrap] Failed to query env state; aborting to avoid accidental key rotation." >&2
+  exit 1
+fi
+PROVISIONED=$(printf '%s\n' "$ENV_LIST" | grep "^JWT_PRIVATE_KEY=" || true)
 if [ -n "$PROVISIONED" ]; then
   echo "[bootstrap] Instance already provisioned — nothing to do."
   [ -f /secrets/server-manager-credentials.txt ] && cat /secrets/server-manager-credentials.txt
@@ -79,6 +85,7 @@ ADMIN_KEY="$ADMIN_KEY" BACKEND_URL="$BACKEND_URL" \
 
 # ── 7. Write credentials ──────────────────────────────────────────────────────
 mkdir -p /secrets
+umask 077
 
 if [ "$PASSWORD_WAS_GENERATED" = "true" ]; then
   RESET_NOTE="

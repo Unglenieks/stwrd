@@ -173,7 +173,7 @@ cd apps/web && pnpm exec playwright test     # 11 end-to-end tests (requires liv
 
 ## Repository layout
 
-```
+```text
 /convex            Backend — schema, auth, and all domain modules
 /apps/web          Frontend — TanStack Start (React, SSR)
 /packages/shared   Shared Zod schemas and constants

@@ -30,7 +30,9 @@
 
 	# OIDC discovery + JWKS (/.well-known/openid-configuration, /.well-known/jwks.json).
 	handle /.well-known/* {
-		reverse_proxy backend:3211
+		reverse_proxy backend:3211 {
+			header_up X-Forwarded-For {remote_host}
+		}
 	}
 
 	# Everything else → the web frontend.
