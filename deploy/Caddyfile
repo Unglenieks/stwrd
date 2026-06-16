@@ -1,22 +1,36 @@
-# Caddy reverse proxy (spec §3.1, §19.5).
+# Caddy reverse proxy — production (spec §3.1, §19.5).
 #
-# Terminates TLS for a single public hostname and routes:
-#   /api/*  → Convex backend client API (WebSocket) on :3210
-#   /*      → TanStack Start frontend on :3000
+# Single public hostname, path-routed:
+#   /api/*          → Convex client API (WebSocket + HTTP) on backend:3210
+#   /auth/*         → Convex HTTP actions (custom auth endpoints)  on backend:3211
+#   /.well-known/*  → Convex HTTP actions (JWKS / OIDC discovery)  on backend:3211
+#   /*              → TanStack Start frontend on frontend:3000
 #
-# TLS is automatic via ACME HTTP-01 (ports 80/443 reachable). For CGNAT / DDNS,
-# swap in the DNS-01 challenge with a Caddy DNS-provider plugin — see
-# ../docs/ops-README.md (§19.5). The Convex dashboard (:6791) is intentionally
-# NOT routed here; it stays bound to localhost (§3.1).
+# TLS is automatic via ACME HTTP-01 (ports 80/443 must be reachable).
+# The Convex dashboard (:6791) is intentionally NOT routed here; it stays
+# bound to 127.0.0.1 (§3.1).
 
 {$PROXY_HOSTNAME} {
 	encode zstd gzip
 
-	# Convex client API + HTTP actions (auth endpoints see X-Forwarded-For, §6.2).
+	# Convex client API — strip the /api prefix before proxying.
 	handle_path /api/* {
 		reverse_proxy backend:3210 {
 			header_up X-Forwarded-For {remote_host}
 		}
+	}
+
+	# Custom auth HTTP actions (/auth/login, /auth/mfa/*, /auth/invite/accept).
+	# Path is preserved — backend:3211 handles the full /auth/* tree.
+	handle /auth/* {
+		reverse_proxy backend:3211 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	# OIDC discovery + JWKS (/.well-known/openid-configuration, /.well-known/jwks.json).
+	handle /.well-known/* {
+		reverse_proxy backend:3211
 	}
 
 	# Everything else → the web frontend.

@@ -11,4 +11,6 @@ export default defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  // Bundle all dependencies into the SSR build so the container needs no node_modules.
+  ssr: { noExternal: true },
 });

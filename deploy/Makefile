@@ -1,42 +1,60 @@
 # Stwrd — operator Makefile (spec §19.2).
-# Run from the deploy/ directory. Wraps the first-run and day-2 procedures.
+# Run from the deploy/ directory.
 
-COMPOSE ?= docker compose
-REPO_ROOT := $(shell cd .. && pwd)
+COMPOSE         ?= docker compose
+QUICKSTART_ARGS := -f docker-compose.quickstart.yml --env-file .env.quickstart
+REPO_ROOT       := $(shell cd .. && pwd)
 
-.PHONY: help up down logs ps admin-key deploy env-set-secret backup restore
+.PHONY: help setup-env up up-quickstart down logs ps bootstrap-logs backup restore
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-up: ## Bring up the full stack (detached)
+# ── First-run setup ───────────────────────────────────────────────────────────
+
+setup-env: ## Generate .env from SITE_ORIGIN. Usage: make setup-env SITE_ORIGIN=https://library.example.org
+	@test -n "$(SITE_ORIGIN)" || { echo "Usage: make setup-env SITE_ORIGIN=https://library.example.org"; exit 1; }
+	@HOSTNAME=$$(printf '%s' '$(SITE_ORIGIN)' | sed 's|https\?://||' | cut -d/ -f1); \
+	 INSTANCE_NAME=$$(openssl rand -hex 6); \
+	 INSTANCE_SECRET=$$(openssl rand -hex 32); \
+	 sed \
+		-e "s|^SITE_ORIGIN=.*|SITE_ORIGIN=$(SITE_ORIGIN)|" \
+		-e "s|^CONVEX_CLOUD_ORIGIN=.*|CONVEX_CLOUD_ORIGIN=$(SITE_ORIGIN)/api|" \
+		-e "s|^PROXY_HOSTNAME=.*|PROXY_HOSTNAME=$$HOSTNAME|" \
+		-e "s|^INSTANCE_NAME=.*|INSTANCE_NAME=$$INSTANCE_NAME|" \
+		-e "s|^INSTANCE_SECRET=.*|INSTANCE_SECRET=$$INSTANCE_SECRET|" \
+		.env.example > .env; \
+	 echo "Generated .env for $(SITE_ORIGIN)"; \
+	 echo "Next: edit .env to set ACME_EMAIL and optionally ORG_NAME, then: make up"
+
+# ── Stack management ──────────────────────────────────────────────────────────
+
+up: ## Start the production stack (detached). Run make setup-env first.
 	$(COMPOSE) up -d
 
-down: ## Stop the stack (volumes preserved)
+up-quickstart: ## Start the localhost quickstart stack (no domain or TLS needed)
+	$(COMPOSE) $(QUICKSTART_ARGS) up -d
+
+down: ## Stop the stack (data volume preserved)
 	$(COMPOSE) down
 
-logs: ## Tail logs for all services
+logs: ## Tail all service logs
 	$(COMPOSE) logs -f
 
-ps: ## Show service status
+ps: ## Show container status
 	$(COMPOSE) ps
 
-admin-key: ## Generate a Convex admin key (store it securely; §19.2 step 3)
-	$(COMPOSE) exec backend ./generate_admin_key.sh
+bootstrap-logs: ## Show bootstrap output (credentials are here on first run)
+	$(COMPOSE) logs bootstrap
 
-deploy: ## Push Convex functions/schema to the running backend (§19.2 step 4)
-	@test -n "$$CONVEX_SELF_HOSTED_URL" || (echo "Set CONVEX_SELF_HOSTED_URL"; exit 1)
-	@test -n "$$CONVEX_SELF_HOSTED_ADMIN_KEY" || (echo "Set CONVEX_SELF_HOSTED_ADMIN_KEY"; exit 1)
-	cd $(REPO_ROOT) && npx convex deploy
+# ── Day-2 operations ──────────────────────────────────────────────────────────
 
-env-set-secret: ## Set APP_SECRETS_KEY on the backend (§19.1). Usage: make env-set-secret KEY=...
-	@test -n "$(KEY)" || (echo "Usage: make env-set-secret KEY=<value>"; exit 1)
-	cd $(REPO_ROOT) && npx convex env set APP_SECRETS_KEY "$(KEY)"
+backup: ## Snapshot all data + file storage to ./backups/ (run nightly via cron)
+	mkdir -p $(REPO_ROOT)/backups
+	cd $(REPO_ROOT) && npx convex export \
+		--path ./backups/snapshot-$$(date +%Y%m%d-%H%M%S).zip
 
-backup: ## Nightly consistent snapshot of tables + file storage (§18.4)
-	cd $(REPO_ROOT) && npx convex export --path ./backups/snapshot-$$(date +%Y%m%d-%H%M%S).zip
-
-restore: ## Restore from a snapshot. Usage: make restore SNAPSHOT=path.zip (§18.4)
-	@test -n "$(SNAPSHOT)" || (echo "Usage: make restore SNAPSHOT=<file.zip>"; exit 1)
+restore: ## Restore from a snapshot. Usage: make restore SNAPSHOT=path.zip
+	@test -n "$(SNAPSHOT)" || { echo "Usage: make restore SNAPSHOT=<file.zip>"; exit 1; }
 	cd $(REPO_ROOT) && npx convex import --replace "$(SNAPSHOT)"
