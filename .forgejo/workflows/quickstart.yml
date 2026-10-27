@@ -1,0 +1,51 @@
+name: Quickstart smoke
+
+# Builds and starts deploy/docker-compose.quickstart.yml (the stack agents use as a
+# local build), bootstraps it, and checks frontend, API, JWKS and login through the
+# Caddy proxy. Runs on Forgejo Actions; check with `fleet-ci runs stwrd`.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "deploy/**"
+      - "apps/web/Dockerfile"
+      - "apps/web/docker-entrypoint.sh"
+      - "apps/web/node-server.mjs"
+      - "pnpm-lock.yaml"
+      - ".forgejo/workflows/quickstart.yml"
+  pull_request:
+    paths:
+      - "deploy/**"
+      - "apps/web/Dockerfile"
+      - "apps/web/docker-entrypoint.sh"
+      - "apps/web/node-server.mjs"
+      - "pnpm-lock.yaml"
+      - ".forgejo/workflows/quickstart.yml"
+  workflow_dispatch:
+
+jobs:
+  quickstart:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      # Jobs drive the runner VM's Docker daemon, which cannot see the job's
+      # workspace path. Copy the repo to the same path on the VM and inside the job,
+      # so compose's relative bind mounts (Caddyfile.local, secrets/) resolve.
+      - name: Mirror checkout to a host-visible path
+        run: |
+          D=/tmp/stwrd-quickstart-${{ github.run_id }}
+          echo "STACK_DIR=$D" >> "$GITHUB_ENV"
+          mkdir -p "$D" && cp -a . "$D/"
+          tar -C "$D" -cf - . | docker run --rm -i -v /tmp:/host-tmp alpine:3.20 \
+            sh -c "mkdir -p /host-tmp/${D#/tmp/} && tar -C /host-tmp/${D#/tmp/} -xf -"
+      - name: Quickstart smoke
+        env:
+          PROJECT: stwrd-qs-${{ github.run_id }}
+          NO_HOST_PORTS: "1"
+        run: bash "$STACK_DIR/deploy/quickstart-smoke.sh"
+      - name: Remove host copy
+        if: always()
+        run: |
+          D=/tmp/stwrd-quickstart-${{ github.run_id }}
+          docker run --rm -v /tmp:/host-tmp alpine:3.20 rm -rf "/host-tmp/${D#/tmp/}"

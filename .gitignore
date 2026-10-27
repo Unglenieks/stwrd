@@ -21,6 +21,7 @@ backups/
 !.env.example
 !.env.quickstart
 *.local
+!deploy/Caddyfile.local
 
 # Bootstrap-generated credentials (host-readable but never committed)
 deploy/secrets/
@@ -44,3 +45,6 @@ test-results/
 # Deploy data volumes (if mounted locally)
 deploy/data/
 deploy/caddy_data/
+
+# quickstart-smoke.sh CI override
+deploy/.quickstart-noports.yml

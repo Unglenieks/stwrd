@@ -1,0 +1,37 @@
+# Caddy reverse proxy — localhost stacks (docker-compose.quickstart.yml,
+# docker-compose.local.yml). HTTP only, no ACME. Same path routing as the
+# production Caddyfile:
+#   /api/*          → Convex client API on backend:3210 (prefix stripped)
+#   /auth/*         → Convex HTTP actions on backend:3211
+#   /.well-known/*  → Convex HTTP actions (JWKS / OIDC discovery) on backend:3211
+#   /*              → TanStack Start frontend on frontend:3000
+
+{
+	auto_https off
+}
+
+:80 {
+	encode zstd gzip
+
+	handle_path /api/* {
+		reverse_proxy backend:3210 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	handle /auth/* {
+		reverse_proxy backend:3211 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	handle /.well-known/* {
+		reverse_proxy backend:3211 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+}
