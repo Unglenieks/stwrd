@@ -1,11 +1,14 @@
 name: CI
 
+# Runs on Forgejo Actions (fleet runner `oceanus-ci-runner`). Agents check runs with
+# `fleet-ci runs stwrd` / `fleet-ci wait stwrd` / `fleet-ci logs stwrd <run>`.
 on:
   push:
     branches: [main]
   pull_request:
   schedule:
     - cron: "0 6 * * 1" # weekly dependency audit (Mon 06:00 UTC, §18.1)
+  workflow_dispatch:
 
 jobs:
   # Fast gate — typecheck + unit tests. convex-test runs in-process against the
