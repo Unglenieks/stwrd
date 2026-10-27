@@ -31,8 +31,12 @@ jobs:
         run: pnpm -F @stwrd/web build
 
   # Backup → restore drill (§18.4) against a seeded self-hosted instance.
+  # On the fleet runner, service containers share the VM's host network, so the
+  # backend binds 3210/3211 there; the concurrency group keeps two drills apart.
   restore-drill:
     runs-on: ubuntu-latest
+    concurrency:
+      group: stwrd-restore-drill
     services:
       convex:
         image: ghcr.io/convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463
@@ -52,10 +56,17 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
+      # Derive the admin key from INSTANCE_NAME + INSTANCE_SECRET with the image's own
+      # generate_key (as deploy/bootstrap.sh does). Forgejo's runner does not populate
+      # job.services.<id>.id, so `docker exec` into the service container is not possible.
+      # Keep the image digest and instance values in sync with `services.convex` above.
       - name: Generate admin key
         id: adminkey
         run: |
-          KEY=$(docker exec "${{ job.services.convex.id }}" ./generate_admin_key.sh | tail -1)
+          KEY=$(docker run --rm --entrypoint /convex/generate_key \
+            ghcr.io/convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463 \
+            lot-ci 0000000000000000000000000000000000000000000000000000000000000000 | tail -1)
+          [ -n "$KEY" ] || { echo "admin key generation failed" >&2; exit 1; }
           echo "key=$KEY" >> "$GITHUB_OUTPUT"
       - name: Deploy + seed + restore drill
         env:
