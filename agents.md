@@ -85,10 +85,35 @@ One organization per installation. All routes require authentication. The server
   Caddyfile                  Caddy reverse proxy config (TLS, routing)
   Makefile                   Operational commands (deploy, backup, restore, env-set-secret)
   .env.example               Full environment variable documentation
+  docker-compose.quickstart.yml  Localhost stack (HTTP only) — also the local agent build
+  Caddyfile.local            HTTP-only proxy config for the localhost compose files
+  quickstart-smoke.sh        Start the quickstart stack, verify it end to end, tear down
   restore-drill.sh           Backup → restore → verify script (runs in CI)
 
-/.github/workflows/ci.yml    CI: typecheck, unit tests, backup/restore drill
+/.forgejo/workflows/
+  ci.yml                     CI: typecheck, unit tests, frontend build, backup/restore drill
+  quickstart.yml             Quickstart smoke: build + bootstrap the localhost stack, check login
 ```
+
+---
+
+## Code hosting and CI
+
+- **Origin is Forgejo:** `ssh://git@git.home.unglenieks.com:2222/Unglenieks/stwrd.git` (web: https://git.home.unglenieks.com/Unglenieks/stwrd). Push branches there and open pull requests on Forgejo (web UI or `POST /api/v1/repos/Unglenieks/stwrd/pulls`). Do not use `gh`.
+- **GitHub (`github.com/Unglenieks/stwrd`) is a read-only mirror**, synced from Forgejo every ~2 minutes. Never push to it; agent clones keep a `github` remote with pushes disabled.
+- **CI is Forgejo Actions** on the fleet runner (`.forgejo/workflows/`). GitHub Actions no longer runs. Both workflows run on pull requests; `ci.yml` also runs on `main`, weekly, and on dispatch.
+- **Checking CI (agents on Shipyard)** with `fleet-ci`:
+
+  ```sh
+  fleet-ci runs stwrd               # recent runs: number, status, event, workflow, branch, title
+  fleet-ci wait stwrd [run]         # block until done; exit 0 only on success
+  fleet-ci logs stwrd <run> [job]   # job logs (job index 0, 1, ...)
+  fleet-ci dispatch stwrd ci.yml [ref]
+  fleet-ci url stwrd [run]          # link for a human
+  ```
+
+  The runner is shared and runs 2 jobs at a time, so runs may sit in `waiting` for a while.
+- **Deployment:** there is none from this repo. Stwrd is self-hosted by each organization from `deploy/`; no Railway, Vercel or Convex Cloud project exists. For a running build to test against, see [`docs/local-environments.md`](./docs/local-environments.md).
 
 ---
 
@@ -173,3 +198,4 @@ The frontend calls `storage.generateUploadUrl` (a Convex query) to get a short-l
 | [`docs/domain-change.md`](./docs/domain-change.md) | Hostname and TLS change runbook |
 | [`docs/lxc.md`](./docs/lxc.md) | LXC hosting guide |
 | [`docs/conformance.md`](./docs/conformance.md) | §24 test suite — scenario-to-test mapping |
+| [`docs/local-environments.md`](./docs/local-environments.md) | Running a testable build locally / on the fleet (agent builds) |

@@ -171,7 +171,10 @@ without a migration.
 pnpm install
 pnpm test:convex                             # 52 backend unit + conformance tests
 cd apps/web && pnpm exec playwright test     # 11 end-to-end tests (requires live stack + mailpit)
+deploy/quickstart-smoke.sh                   # build + start the quickstart stack, check login, tear down
 ```
+
+CI runs on Forgejo Actions (`.forgejo/workflows/`).
 
 ---
 
@@ -198,6 +201,9 @@ For native-process LXC, see [`docs/lxc.md`](./docs/lxc.md).
 ---
 
 ## Contributing
+
+The primary repository is hosted on a private Forgejo instance;
+[github.com/Unglenieks/stwrd](https://github.com/Unglenieks/stwrd) is a read-only mirror of it.
 
 Pull requests are welcome. The spec is [`spec.md`](./spec.md) — new features should align
 with the design goals there. The permanent non-goals (multi-tenancy, due dates, in-app

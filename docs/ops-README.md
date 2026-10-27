@@ -74,8 +74,8 @@ inbound (replies + bounces) is polled by IMAP every 2 min (§13).
 - **Restore**: `make restore SNAPSHOT=<file.zip>` → `npx convex import --replace`
   into a fresh stack.
 - **Restore drill**: [`deploy/restore-drill.sh`](../deploy/restore-drill.sh)
-  exports → restores → verifies; it runs in CI against a seeded instance
-  (`.github/workflows/ci.yml`).
+  exports → restores → verifies; it runs in CI (Forgejo Actions,
+  [`.forgejo/workflows/ci.yml`](../.forgejo/workflows/ci.yml)) against a seeded instance.
 - Do **not** live-copy the SQLite volume — stop the backend or use a filesystem
   snapshot first.
 
