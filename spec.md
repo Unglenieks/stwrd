@@ -58,8 +58,8 @@ Each community org runs its own isolated instance (one org per install). The ins
 
 Three services, one Docker Compose stack (or equivalent LXC layout):
 
-1. **Convex backend** (`ghcr.io/get-convex/convex-backend`) — the open-source self-hosted Convex instance. Provides the reactive database, serverless functions (queries/mutations/actions), scheduled jobs (crons), file storage for item photos, and HTTP actions. Listens on port 3210 (client API) and 3211 (HTTP actions). Persists to a Docker volume; SQLite by default, optionally an external Postgres via `POSTGRES_URL` for larger installs.
-2. **Convex dashboard** (`ghcr.io/get-convex/convex-dashboard`) — operator-facing admin console on port 6791, authenticated with the instance admin key. This is *infrastructure* tooling for the server manager (inspecting tables, logs, running functions), distinct from the in-app admin dashboard (§15).
+1. **Convex backend** (`ghcr.io/convex/convex-backend`) — the open-source self-hosted Convex instance. Provides the reactive database, serverless functions (queries/mutations/actions), scheduled jobs (crons), file storage for item photos, and HTTP actions. Listens on port 3210 (client API) and 3211 (HTTP actions). Persists to a Docker volume; SQLite by default, optionally an external Postgres via `POSTGRES_URL` for larger installs.
+2. **Convex dashboard** (`ghcr.io/convex/convex-dashboard`) — operator-facing admin console on port 6791, authenticated with the instance admin key. This is *infrastructure* tooling for the server manager (inspecting tables, logs, running functions), distinct from the in-app admin dashboard (§15).
 3. **Web frontend** — TanStack Start app served by its own Node container, connecting to the Convex backend over WebSocket. All member and admin UI lives here.
 
 ```
@@ -453,7 +453,7 @@ Convex dashboard provides function logs/metrics. Frontend container logs to stdo
 ```yaml
 services:
   backend:
-    image: ghcr.io/get-convex/convex-backend:<pinned>
+    image: ghcr.io/convex/convex-backend:<pinned>
     environment:
       - INSTANCE_NAME=${INSTANCE_NAME}
       - INSTANCE_SECRET=${INSTANCE_SECRET}
@@ -464,7 +464,7 @@ services:
     volumes: [ data:/convex/data ]
     healthcheck: { test: curl -f http://localhost:3210/version }
   dashboard:
-    image: ghcr.io/get-convex/convex-dashboard:<pinned>
+    image: ghcr.io/convex/convex-dashboard:<pinned>
     ports: [ "127.0.0.1:6791:6791" ]                  # localhost-only by default
     depends_on: { backend: { condition: service_healthy } }
   frontend:

@@ -5,7 +5,7 @@
 #   docker build -f deploy/Dockerfile.bootstrap -t stwrd-bootstrap .
 
 # ── Stage 1: extract generate_key from the pinned convex-backend image ────────
-FROM ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463 AS backend-bins
+FROM ghcr.io/convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463 AS backend-bins
 
 # ── Stage 2: bootstrap runner ─────────────────────────────────────────────────
 # Ubuntu 24.04 (Noble) — same distro as the convex-backend image, ensuring

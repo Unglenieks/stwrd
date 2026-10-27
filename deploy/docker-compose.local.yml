@@ -3,7 +3,7 @@
 
 services:
   backend:
-    image: ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463
+    image: ghcr.io/convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463
     stop_grace_period: 10s
     stop_signal: SIGINT
     environment:
@@ -27,7 +27,7 @@ services:
       - "127.0.0.1:3211:3211"
 
   dashboard:
-    image: ghcr.io/get-convex/convex-dashboard@sha256:bbc4d2c43d19fd6f2791dd6c5153a76e127f3eea489c1639e5acf66999c216bf
+    image: ghcr.io/convex/convex-dashboard@sha256:bbc4d2c43d19fd6f2791dd6c5153a76e127f3eea489c1639e5acf66999c216bf
     ports:
       - "127.0.0.1:6791:6791"
     environment:

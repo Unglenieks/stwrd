@@ -18,7 +18,7 @@ Convex dashboard (:6791, localhost-only) ──────▶ Convex backend
 
 ### Convex backend
 
-Image: `ghcr.io/get-convex/convex-backend` (pinned by digest in `deploy/docker-compose.yml`).
+Image: `ghcr.io/convex/convex-backend` (pinned by digest in `deploy/docker-compose.yml`).
 
 Responsibilities:
 - Reactive database (SQLite default; Postgres via `POSTGRES_URL`)
@@ -43,7 +43,7 @@ The container entrypoint (`apps/web/docker-entrypoint.sh`) writes `PUBLIC_API_OR
 
 ### Convex dashboard
 
-Image: `ghcr.io/get-convex/convex-dashboard` (pinned by digest). Bound to `127.0.0.1:6791`. Operator infrastructure tool — table viewer, function logs, manual mutation runner. Never route publicly.
+Image: `ghcr.io/convex/convex-dashboard` (pinned by digest). Bound to `127.0.0.1:6791`. Operator infrastructure tool — table viewer, function logs, manual mutation runner. Never route publicly.
 
 ### Caddy
 

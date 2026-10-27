@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       convex:
-        image: ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463
+        image: ghcr.io/convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463
         env:
           INSTANCE_NAME: lot-ci
           INSTANCE_SECRET: "0000000000000000000000000000000000000000000000000000000000000000"
